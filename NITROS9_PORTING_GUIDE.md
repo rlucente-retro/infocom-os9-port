@@ -67,13 +67,25 @@ The interpreter should use a table-driven approach for terminal control (e.g., H
     - Overwrite `[more]` with spaces and reset `LINCNT` to 1.
 
 ### 2.6 Critical Implementation: Custom Scrolling
-Because standard drivers lack protected regions, a **Partial Screen Scroll** is mandatory:
-- **Detection:** Intercept characters that would cause the cursor to move past `G_ROWS-1`.
-- **Mechanism:**
-    1.  Shift memory for Rows 2 to `G_ROWS-1` up by one.
-    2.  Fill Row `G_ROWS-1` with spaces.
-    3.  Reset cursor to the start of Row `G_ROWS-1`.
-- **Safety:** Ensure the Status Line (Row 0) is **never** included in the shift.
+Because standard drivers lack protected regions, a **Partial Screen Scroll** is mandatory to keep the Status Line (Row 0) static while the rest of the screen scrolls.
+
+#### Method A: Driver-Assisted Scrolling (Preferred)
+The most efficient "OS-9 way" is to use terminal escape sequences if the driver supports them:
+1.  **Working Area (`CWArea`):** Send `1B 32 <x> <y> <w> <h>` to restrict the scrolling region to Rows 1-29. Subsequent Carriage Returns will then naturally scroll only this region.
+2.  **Delete Line:** If `CWArea` is unavailable, manual scrolling can be achieved by moving the cursor to Row 1 and sending the **Delete Line** code (`1B 5B 4D` or `$1F $22` depending on driver). This shifts all lines below Row 1 up, leaving Row 0 untouched.
+
+#### Method B: RAM Shadow Buffer (Portable Fallback)
+For "dumb" terminals or basic Level 1 drivers that do not support line operations:
+1.  **Allocation:** At startup, use `F$Mem` to allocate a `G_COLS * G_ROWS` byte buffer in the data area.
+2.  **Tracking:** All characters sent to the screen are also mirrored into this buffer.
+3.  **Manual Scroll:** 
+    - When a scroll is needed, use a high-speed assembly loop (`LDU/STU`) to shift rows 2 through `G_ROWS-1` up by one row in the RAM buffer.
+    - Fill the last row of the buffer with spaces.
+    - Re-print the affected rows to the terminal.
+4.  **Note:** While slower on serial terminals, this method is 100% portable across all NitrOS-9 platforms and drivers.
+
+#### Method C: Direct Memory Access (CoCo 1/2 Level 1)
+On Level 1 systems without an MMU, if the interpreter knows it is running on native hardware (e.g., a 32x16 VDG screen at `$0400`), it may directly manipulate the video RAM for maximum speed. This should be a last-resort, hardware-specific optimization.
 
 ---
 
