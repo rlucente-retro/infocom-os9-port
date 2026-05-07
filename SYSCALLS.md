@@ -764,12 +764,12 @@ This document provides a comprehensive instructional guide to the NitrOS-9 syste
 
 **Intent:** Map Specific Block
 
-**Status:** Implemented
+**Status:** Implemented (Privileged)
 
 - **Entry:** B = The number of blocks to map in. X = The starting block number.
 - **Exit:** U = The address of the first block in the caller's address space.
 
-**Description:** Map one or more blocks into the calling process' address space.  Error:  B = A non-zero error code. CC = Carry flag set to indicate error.
+**Description:** Map one or more blocks into the calling process' address space. This call is privileged as it directly manipulates the MMU hardware registers.
 
 - **Implementation References:**
   - `defs/os9.d`
@@ -780,12 +780,12 @@ This document provides a comprehensive instructional guide to the NitrOS-9 syste
 
 **Intent:** Clear Specific Block
 
-**Status:** Implemented
+**Status:** Implemented (Privileged)
 
 - **Entry:** B = Number of blocks, U = Address of first block
 - **Exit:** None
 
-**Description:** Clears a range of blocks from the calling process's DAT image, effectively unmapping them. It does NOT zero out the RAM itself, but marks the blocks as free in the process's logical address space.
+**Description:** Clears a range of blocks from the calling process's DAT image, effectively unmapping them. Privileged.
 
 - **Implementation References:**
   - `defs/os9.d`
@@ -1803,6 +1803,18 @@ After:  /D0/PAYROLL
 - **Exit:** A = Data byte (if read)
 
 **Description:** Provides access to non-volatile memory, such as battery-backed RAM on a Real-Time Clock chip. Implementation is hardware-specific and is often provided by a separate module or custom kernel extension rather than the base NitrOS-9 kernel.
+
+- **Implementation References:**
+  - `defs/os9.d`
+
+
+her than the base NitrOS-9 kernel.
+
+- **Implementation References:**
+  - `defs/os9.d`
+
+
+ by a separate module or custom kernel extension rather than the base NitrOS-9 kernel.
 
 - **Implementation References:**
   - `defs/os9.d`
