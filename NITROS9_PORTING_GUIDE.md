@@ -52,11 +52,11 @@ The interpreter should use a table-driven approach for terminal control (e.g., H
     6.  Restore cursor position.
 
 ### 2.4 Paging (`[more]` Logic)
-- **Threshold:** Triggered when `LINCNT` reaches the bottom of the defined play area.
+- **Threshold:** Triggered when `LINCNT` reaches `G_ROWS-2` (leaving space for the bottom row).
 - **Execution:** 
     - Print `[more]` at current cursor.
     - Wait for keypress via `I$Read` (Path 0).
-    - Overwrite `[more]` with spaces and reset `LINCNT`.
+    - Overwrite `[more]` with spaces and reset `LINCNT` to 1.
 
 ### 2.5 Critical Implementation: Custom Scrolling
 Because standard drivers lack protected regions, a **Partial Screen Scroll** is mandatory:
@@ -136,6 +136,21 @@ The interpreter acts as a standard shell utility.
     - Call `I$Open` on this path.
 
 ---
+
+## 7. Execution Summary
+
+### 7.1 Startup Sequence
+1.  **Launch:** Shell calls `F$Fork`.
+2.  **Init:** Parse story pathname from parameter area.
+3.  **Load:** Open story file, keep path open for paging.
+4.  **Preload:** Read the initial static Z-code into the reserved data area.
+5.  **Warmstart:** Initialize Z-machine state and begin execution loop.
+
+### 7.2 Termination Sequence
+1.  **Files:** Close all open file paths.
+2.  **Exit:** Terminate process via `F$Exit`.
+ll open file paths.
+2.  **Exit:** Terminate process via `F$Exit`.
 
 ## 7. Execution Summary
 
