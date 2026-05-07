@@ -27,21 +27,29 @@ The logical address space of the process is organized by the kernel at runtime.
 
 ---
 
-## 2. Display and I/O Management (Detailed)
+## 2. Display and I/O Management (Dynamic)
 
-The port targets an 80x30 resolution and uses a hardware-independent abstraction for terminal control.
+The port is designed to be hardware-agnostic and adapt to various screen dimensions (e.g., 32x16, 40x24, 80x24, or 80x30).
 
-### 2.1 Hardware Context
-- **Resolution:** 80 columns x 30 rows.
-- **Status Line Area:** Row 0 (Columns 0 - 79).
-- **Play Area:** Rows 1 - 29.
+### 2.1 Screen Size Detection
+The interpreter determines the screen dimensions at runtime using the following priority:
+1.  **Command-line Overrides:** If the user provides a size (e.g., `zip story.z3 40x24`), these values take precedence.
+2.  **System Query:** The interpreter calls `I$GetStt` with function code `SS.ScSiz` ($26) on Path 1 (Stdout).
+    - **Entry:** `A` = Path, `B` = `$26`.
+    - **Exit:** `X` = Columns, `Y` = Rows.
+3.  **Defaults:** Fallback to 80x24 if auto-detection fails or is unsupported by the driver.
+
+### 2.2 Hardware Context
+- **Global Variables:** `G_COLS` and `G_ROWS` store the detected dimensions.
+- **Status Line Area:** Row 0 (Columns 0 to `G_COLS-1`).
+- **Play Area:** Rows 1 to `G_ROWS-1`.
 - **Character Encoding:** ASCII compatible.
-- **Driver Convention:** Uses standard NitrOS-9 `I$Write` calls to the terminal path (Path 1).
+- **Driver Convention:** Uses standard NitrOS-9 `I$Write` calls to the terminal path.
 
-### 2.2 Terminal Control Codes (Abstraction)
+### 2.3 Terminal Control Codes (Abstraction)
 The interpreter should use a table-driven approach for terminal control (e.g., Home, Move Cursor, Clear Screen) to allow easy adaptation to different terminal drivers.
 
-### 2.3 Status Line Management
+### 2.4 Status Line Management
 - **Visuals:** Row 0 must always appear in **Reverse Video**.
 - **Update Cycle:**
     1.  Save cursor position or track manually.
@@ -51,20 +59,20 @@ The interpreter should use a table-driven approach for terminal control (e.g., H
     5.  Disable Reverse Video.
     6.  Restore cursor position.
 
-### 2.4 Paging (`[more]` Logic)
+### 2.5 Paging (`[more]` Logic)
 - **Threshold:** Triggered when `LINCNT` reaches `G_ROWS-2` (leaving space for the bottom row).
 - **Execution:** 
     - Print `[more]` at current cursor.
     - Wait for keypress via `I$Read` (Path 0).
     - Overwrite `[more]` with spaces and reset `LINCNT` to 1.
 
-### 2.5 Critical Implementation: Custom Scrolling
+### 2.6 Critical Implementation: Custom Scrolling
 Because standard drivers lack protected regions, a **Partial Screen Scroll** is mandatory:
-- **Detection:** Intercept characters that would cause the cursor to move past the last row of the play area.
+- **Detection:** Intercept characters that would cause the cursor to move past `G_ROWS-1`.
 - **Mechanism:**
-    1.  Shift memory for play area rows up by one.
-    2.  Fill the now-empty last row with spaces.
-    3.  Reset cursor to the start of the last row.
+    1.  Shift memory for Rows 2 to `G_ROWS-1` up by one.
+    2.  Fill Row `G_ROWS-1` with spaces.
+    3.  Reset cursor to the start of Row `G_ROWS-1`.
 - **Safety:** Ensure the Status Line (Row 0) is **never** included in the shift.
 
 ---
@@ -129,28 +137,14 @@ The following original CoCo 2 standalone code must be **removed**:
 ## 6. Command Line Interface
 
 The interpreter acts as a standard shell utility.
-- **Usage:** `zip <story_file_path>`
+- **Usage:** `zip <story_file_path> [<cols>x<rows>]`
 - **Parameter Parsing:** 
     - At entry, register `X` points to the parameter area.
-    - Extract the pathlist, terminating at a space or CR.
-    - Call `I$Open` on this path.
+    - Extract the story pathlist (terminates at space or CR).
+    - Optionally parse the screen size (e.g., `80x24`).
+    - Call `I$Open` on the story path.
 
 ---
-
-## 7. Execution Summary
-
-### 7.1 Startup Sequence
-1.  **Launch:** Shell calls `F$Fork`.
-2.  **Init:** Parse story pathname from parameter area.
-3.  **Load:** Open story file, keep path open for paging.
-4.  **Preload:** Read the initial static Z-code into the reserved data area.
-5.  **Warmstart:** Initialize Z-machine state and begin execution loop.
-
-### 7.2 Termination Sequence
-1.  **Files:** Close all open file paths.
-2.  **Exit:** Terminate process via `F$Exit`.
-ll open file paths.
-2.  **Exit:** Terminate process via `F$Exit`.
 
 ## 7. Execution Summary
 
