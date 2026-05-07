@@ -4,24 +4,26 @@ This document provides a comprehensive technical blueprint for porting the COCOZ
 
 ---
 
-## 1. Process and Memory Architecture (Level 1 Optimized)
+## 1. Process and Memory Architecture (OS-9 Native)
 
-The port is designed to run within a standard 64K NitrOS-9 logical address space, sharing memory with the kernel and other resident modules.
+The port follows the standard NitrOS-9 process model, utilizing the kernel's memory management to allocate and protect resources.
 
-### 1.1 Partitioning the Z-Machine State
-- **Interpreter (Shared Code):** Implemented as a re-entrant NitrOS-9 Program Module (`PrgMod`). This module is loaded into high RAM by the OS-9 shell.
-- **Process Data Area:** Private segment (allocated via `F$Mem`) containing the Z-Stack (512 bytes), Global Variables (480 bytes), Local Variables (32 bytes), and I/O buffers.
-- **Story Data (Minimal Preload):** Only the most critical part of the Z-code (Z-Header and initial data, ~4-8KB) is kept resident in the data area.
-- **Paging Window:** A single 2KB or 4KB RAM buffer used to cache Z-code pages from the story file via standard `I$Seek`/`I$Read`.
+### 1.1 Data Area Allocation
+- **Module Header:** The interpreter's Program Module header defines the required data area size (storage).
+- **F$Fork / F$Chain:** When the shell launches the interpreter, the kernel allocates a data area of the size specified in the module header.
+- **Process Data Area:** This area (accessible via offsets from the data pointer) contains:
+    - **Z-Machine State:** Variables, Z-Stack, and I/O buffers.
+    - **Story Preload:** A reserved block for the resident part of the Z-code (~4-8KB).
+    - **Paging Window:** A 4KB RAM buffer used for demand paging.
 
-### 1.2 Logical Memory Map (Target)
-| Logical Address | Segment | Description |
-| :--- | :--- | :--- |
-| `$0000` - `$0FFF` | Data Area | Z-Variables, Stack, Buffers, Interpreter Vars |
-| `$1000` - `$2FFF` | Story Preload | Minimal static Z-code (~8KB) |
-| `$3000` - `$3FFF` | **Paging Window** | RAM Buffer for dynamic Z-code (4KB) |
-| `Top of Mem`     | Program Module | Interpreter Code (Loaded by OS-9) |
-| `$E000` - `$FFFF` | System | OS-9 Vectors and Reserved System Area |
+### 1.2 Logical Memory Map (Conceptual)
+The logical address space of the process is organized by the kernel at runtime.
+
+| Logical Region | Description |
+| :--- | :--- |
+| **Data Area** | Starts at `$0000` (relative to process). Contains variables, stacks, preload, and paging buffers. |
+| **Program Module** | The executable code, loaded by the kernel. Can occupy memory up to `$FEFF`. |
+| **System Area** | `$FF00` - `$FFFF`. Reserved for I/O and System Vectors. |
 
 ---
 
@@ -37,12 +39,12 @@ The port targets an 80x30 resolution and uses a hardware-independent abstraction
 - **Driver Convention:** Uses standard NitrOS-9 `I$Write` calls to the terminal path (Path 1).
 
 ### 2.2 Terminal Control Codes (Abstraction)
-The interpreter should use a table-driven approach for terminal control (e.g., Home, Move Cursor, Clear Screen) to allow easy adaptation to different terminal drivers (VDG, GrfDrv, or FNX).
+The interpreter should use a table-driven approach for terminal control (e.g., Home, Move Cursor, Clear Screen) to allow easy adaptation to different terminal drivers.
 
 ### 2.3 Status Line Management
 - **Visuals:** Row 0 must always appear in **Reverse Video**.
 - **Update Cycle:**
-    1.  Save cursor position (if supported by driver) or track manually.
+    1.  Save cursor position or track manually.
     2.  Move cursor to `(0, 0)`.
     3.  Enable Reverse Video.
     4.  Print Room Name (left-aligned), Score/Moves (right-aligned).
@@ -69,25 +71,25 @@ Because standard drivers lack protected regions, a **Partial Screen Scroll** is 
 
 ## 3. Virtual Memory and Paging (File-Based)
 
-To support NitrOS-9 Level 1 and standard 64K CoCo 2 hardware, the interpreter uses a file-backed paging system.
+To support standard 64K hardware, the interpreter uses a file-backed paging system.
 
 ### 3.1 Strategy: Buffered File Access
 1.  **File Handle:** Keep the story file path open throughout the execution.
-2.  **Preload:** Load the first ~8KB of the story directly into the `$1000-$2FFF` region at startup. This ensures the Z-Header and core global data are always resident.
-3.  **Paging Window:** A 4KB RAM buffer (16 Z-pages) at `$3000` acts as a sliding window.
+2.  **Preload:** Load the first ~8KB of the story directly into the reserved space in the data area at startup. This ensures the Z-Header and core global data are always resident.
+3.  **Paging Window:** A 4KB RAM buffer (16 Z-pages) reserved in the data area acts as a sliding window.
 4.  **Demand Paging:** When the Z-machine requests a page outside the preload:
-    - Check if the requested virtual address is already in the `$3000` buffer.
+    - Check if the requested virtual address is already in the buffer.
     - If not, calculate the 32-bit file offset: `Offset = Virtual_Page * 256`.
     - Call `I$Seek` (Function `$88`) to position the file pointer.
     - Call `I$Read` (Function `$89`) to load 4KB into the buffer.
-    - Update the `CURRENT_WINDOW_BASE` tracking variable.
+    - Update the tracking variable for the current window base.
 
 ### 3.2 Address Translation (Z-Page to Logical)
-1.  **If Page < ZPURE:** Address = `$1000 + (Page * 256)`.
+1.  **If Page < ZPURE:** Address = `PRELOAD_BASE + (Page * 256)`.
 2.  **If Page >= ZPURE:**
-    - Is `(Page * 256)` within `[Window_Offset, Window_Offset + 4096)`?
+    - Is `(Page * 256)` within the current window?
     - If No: Perform `I$Seek`/`I$Read` to refresh window.
-    - Address = `$3000 + ((Page * 256) % 4096)`.
+    - Address = `WINDOW_BASE + ((Page * 256) % 4096)`.
 
 ---
 
@@ -141,23 +143,9 @@ The interpreter acts as a standard shell utility.
 1.  **Launch:** Shell calls `F$Fork`.
 2.  **Init:** Parse story pathname from parameter area.
 3.  **Load:** Open story file, keep path open for paging.
-4.  **Preload:** Read the initial static Z-code into the data area.
+4.  **Preload:** Read the initial static Z-code into the reserved data area.
 5.  **Warmstart:** Initialize Z-machine state and begin execution loop.
 
 ### 7.2 Termination Sequence
 1.  **Files:** Close all open file paths.
 2.  **Exit:** Terminate process via `F$Exit`.
-
----
-
-## 8. Level 1 Memory Footprint (CoCo 2)
-
-On a Level 1 system, the 64K map is shared by the Kernel, File Managers (RBF, SCF), Device Drivers, the Shell, and other resident modules.
-
-### 8.1 Minimizing Resident State
-- **Static Allocation:** Only the most critical Z-machine state is kept at fixed addresses.
-- **Dynamic Growth:** The interpreter uses `F$Mem` at startup to request exactly the amount of RAM needed for the Preload and Paging Window.
-
-### 8.2 Code vs. Data
-- The interpreter code is a **Program Module**. OS-9 loads this module into high RAM.
-- The **Data Area** (where we store the preload and buffers) begins at the address returned by the shell or the base of the process's data memory.
