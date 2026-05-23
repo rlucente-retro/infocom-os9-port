@@ -11,7 +11,7 @@ The port follows the standard NitrOS-9 process model, utilizing the kernel's mem
 ### 1.1 Data Area Allocation
 - **Module Header:** The interpreter's Program Module header defines the required static data area size (e.g., 1024 bytes).
 - **F$Fork / F$Chain:** When the shell launches the interpreter, the kernel allocates this initial data area.
-- **Dynamic Allocation (F$Mem):** At startup, the interpreter calls `F$Mem` to expand its data area to accommodate the large file buffers (`pagesz * numpg`).
+- **Dynamic Allocation (F$Mem):** At startup, the interpreter uses `F$Mem` to expand its data area. The prototype employs an iterative strategy, starting with a minimum requirement (e.g., 8 pages/2KB for file buffers) and repeatedly requesting more memory from the kernel until a maximum limit (e.g., 160 pages/40KB) is reached or the allocation fails, ensuring the largest possible paging window is available.
 - **Process Data Area:** This area (accessible via offsets from the data pointer `U`) contains:
     - **Global State:** `cur_cols`, `cur_rows`, `cur_x`, `cur_y`, `page_lines`, `was_cr`.
     - **Transient Buffers:** `display_codes` (3 bytes for escape sequences), `dev_opts` (32 bytes for terminal status).
@@ -34,9 +34,12 @@ The port is designed to be hardware-agnostic and adapt to various screen dimensi
 
 ### 2.1 Screen Size Detection
 The interpreter determines the screen dimensions at runtime using the following priority:
-1.  **Command-line Overrides:** Parses the parameter area (at `X`) for strings like `80x24`.
+1.  **Command-line Overrides:** Parses the parameter area (at `X`) for specific strings: `32x16`, `40x24`, `40x30`, `80x24`, `80x30`.
 2.  **System Query:** Calls `I$GetStt` with `SS.ScSiz` ($26) on Path 1.
 3.  **Defaults:** Fallback to 32x16 if detection fails.
+
+**Safety Checks:**
+Regardless of the detection method, the interpreter verifies that the dimensions are at least 10 columns by 4 rows. If the screen is too small, it should abort to prevent display corruption.
 
 **Note on 32x16 (VDG) Compatibility:**
 If 32x16 is detected, the interpreter must verify that the terminal driver supports reverse video (required for the status line). This is done by:
@@ -98,6 +101,13 @@ A lightweight alternative for drivers without windowing or line deletion:
 2.  **Scroll:** Send an ASCII LF (`$0A`). This scrolls the entire screen up.
 3.  **Restore:** Immediately move the cursor to `(0, 0)` and redraw the Status Line (Row 0).
 4.  **Sync:** Move the cursor back to the start of the "new" bottom line (still `cur_rows - 2`) to continue output.
+
+### 2.7 Character Handling and Formatting
+The interpreter performs manual text processing to ensure consistent output across different terminal types.
+
+- **Tab Expansion:** Horizontal tabs ($09) are not sent directly to the driver. Instead, the interpreter expands them into spaces, with tab stops set every 8 columns.
+- **CRLF Normalization:** The interpreter handles both CR ($0D) and LF ($0A) characters. To avoid double-spacing, it employs a state variable (`was_cr`) to detect and ignore an LF immediately following a CR.
+- **Automatic Wrapping:** When the cursor reaches `cur_cols`, the interpreter automatically triggers a newline (and paging/scrolling logic if necessary) before printing the next character.
 
 ---
 
