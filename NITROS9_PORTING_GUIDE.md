@@ -34,7 +34,7 @@ The port is designed to be hardware-agnostic and adapt to various screen dimensi
 
 ### 2.1 Screen Size Detection
 The interpreter determines the screen dimensions at runtime using the following priority:
-1.  **Command-line Overrides:** Parses the parameter area (at `X`) for specific strings: `32x16`, `40x24`, `40x30`, `80x24`, `80x30`.
+1.  **Command-line Overrides:** Parses the parameter area (at `X`) for specific strings: `32x16`, `40x24`, `40x30`, `80x24`, `80x30` (case-insensitive for 'x').
 2.  **System Query:** Calls `I$GetStt` with `SS.ScSiz` ($26) on Path 1.
 3.  **Defaults:** Fallback to 32x16 if detection fails.
 
@@ -58,7 +58,10 @@ If 32x16 is detected, the interpreter must verify that the terminal driver suppo
 The prototype uses standard NitrOS-9 VDG terminal escape sequences:
 - **Move Cursor:** `$02 <col+32> <row+32>`.
 - **Clear Screen:** `$0C` (Form Feed).
-- **Reverse Video:** On VDG screens, characters with the high bit set (`$80-$FF`) appear in reverse video. For other terminals, standard ANSI or driver-specific sequences must be substituted.
+- **Reverse Video:** The interpreter uses a function vector (`prtinv_vec`) to handle inverse text, allowing it to adapt to different terminal drivers:
+    - **Level 1 (VDG):** Converts uppercase characters to lowercase (which appear as inverse on standard VDG) and uses `$80` for inverted spaces.
+    - **Level 2 (Windowing):** Uses standard NitrOS-9 escape sequences: `REVON` (`$1F $20`) to enable and `REVOFF` (`$1F $21`) to disable reverse video.
+    - **Legacy Fallback:** On older VDG drivers, characters with the high bit set (`$80-$FF`) may also appear in reverse video.
 
 ### 2.4 Status Line Management
 - **Visuals:** Row 0 must always appear in **Reverse Video**.
@@ -73,9 +76,9 @@ The prototype uses standard NitrOS-9 VDG terminal escape sequences:
 ### 2.5 Paging (`[more]` Logic)
 - **Threshold:** Triggered when `page_lines` reaches `cur_rows-2` (leaving space for the bottom row).
 - **Execution:** 
-    - Print `[more]` at current cursor.
+    - Print `[more]` (in inverse video) at the bottom-left of the screen (Row `cur_rows-1`, Column 0).
     - Wait for keypress via `I$Read` (Path 0).
-    - Overwrite `[more]` with spaces and reset `page_lines` to 1.
+    - Overwrite `[more]` with spaces and reset `page_lines` to 0.
 
 ### 2.6 Critical Implementation: Custom Scrolling
 Because standard drivers lack protected regions, a **Partial Screen Scroll** is mandatory to keep the Status Line (Row 0) static while the rest of the screen scrolls.
@@ -114,7 +117,7 @@ The interpreter performs manual text processing to ensure consistent output acro
 ## 3. System Services and Signal Handling
 
 ### 3.1 Signal Interception
-To ensure clean termination and handle user interrupts (e.g., `Ctrl-C` / `Keyboard Abort`), the interpreter must establish a signal trap:
+To ensure clean termination and handle user interrupts (e.g., `Ctrl-C` / `Keyboard Abort`), the interpreter establishes a signal trap immediately upon startup:
 1.  **Setup:** Call `F$Icpt` with the address of a signal handler routine.
 2.  **Handler:** The handler should typically close open paths and exit via `F$Exit`.
 
