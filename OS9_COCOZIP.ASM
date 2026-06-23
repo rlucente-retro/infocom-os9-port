@@ -420,6 +420,7 @@ gm_same:
         ldd     TEMP,u          * Return current size in D
         std     ,s
 gm_exit:
+        andcc   #$FE            * Clear carry flag (success)
         puls    d,y,pc
 gm_err:
         puls    d,y
