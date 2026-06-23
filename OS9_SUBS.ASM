@@ -26,8 +26,11 @@ GETLNG: lbsr     NEXTPC          * MSB
 *-------------------------------------------------------------------------------
 VARGET: tsta                    * If zero, value is on stack
         bne     GETVR1
-        lbsr     POPSTK          * Take off stack
-        bra     PSHSTK          * Push back on (essentially Peek)
+        cmpy    zsp_top,u       * Check stack empty
+        lbhs    UNDER           * Underflow if Y >= zsp_top
+        ldd     ,y              * Peek top word
+        std     TEMP,u
+        rts
 
 *-------------------------------------------------------------------------------
 * GETVAR: Fetch variable ID from PC and return value in TEMP
@@ -64,12 +67,11 @@ GETVRG: suba    #16
 *-------------------------------------------------------------------------------
 VARPUT: tsta
         bne     PUTVR1
-        * Original code: PULU D (which is Y in our case) / CMPU #TOPSTA / BHI UNDER / BRA PSHSTK
-        * It discards the top of the stack and pushes TEMP.
-        leay    2,y             * Discard top word
-        cmpy    zsp_top,u
-        bhi     UNDER
-        bra     PSHSTK
+        cmpy    zsp_top,u       * Check stack empty
+        lbhs    UNDER           * Underflow if Y >= zsp_top
+        ldd     TEMP,u          * Load value
+        std     ,y              * Overwrite top word directly
+        rts
 
 *-------------------------------------------------------------------------------
 * PUTBYT: Return byte in A as word in TEMP
@@ -206,7 +208,7 @@ PREDB3: subd    #1              * D = Offset - 2
 
 PDB0:   sta     ZPCL,u
         ldd     VAL,u
-        beq     PDB1            * No page change
+        beq     PDB1_CLR        * No page change, but clear cache flag!
         
         lda     VAL+1,u
         andcc   #%11111110
@@ -216,7 +218,7 @@ PDB0:   sta     ZPCL,u
         adca    ZPCH,u
         anda    #$01
         sta     ZPCH,u
+PDB1_CLR:
         clr     ZPCFLG,u        * Invalidate PC cache
-
 PDB1:   rts
 

@@ -34,16 +34,16 @@ NEXTPC: pshs    x
 NPC0:   clr     MPCFLG,u        * invalidate MPC for safety
         bsr     PAGE            * swap in page, returns page in B
 
-NPC1:   stb     ZPCPNT,u        * set MSB of buffer address
-        clr     ZPCPNT+1,u      * LSB is always 0 (page aligned)
+NPC1:   stb     ZPCPNT,u        * set MSB of absolute PC address
+        lda     ZPCL,u          * get current offset
+        sta     ZPCPNT+1,u      * set LSB to current offset
         lda     #TRUE
         sta     ZPCFLG,u
 
-NPC2:   ldb     ZPCL,u          * get byte index
-        ldx     ZPCPNT,u        * absolute page address
-        abx                     * unsigned 8-bit offset addition
-        lda     ,x              * fetch byte
-        inc     ZPCL,u          * point to next byte
+NPC2:   ldx     ZPCPNT,u        * load absolute pointer
+        lda     ,x+             * fetch byte and increment absolute pointer
+        stx     ZPCPNT,u        * save updated absolute pointer
+        inc     ZPCL,u          * increment offset
         bne     NPC3            * if no overflow, done
 
         clr     ZPCFLG,u        * invalidate cache
@@ -78,17 +78,17 @@ PATCH_LABEL:
 GTBT0:  clr     ZPCFLG,u
         bsr     PAGE
 
-GTBT1:  stb     MPCPNT,u
-        clr     MPCPNT+1,u
+GTBT1:  stb     MPCPNT,u        * set MSB of absolute MPC address
+        lda     MPCL,u          * get current offset
+        sta     MPCPNT+1,u      * set LSB to current offset
         lda     #TRUE
         sta     MPCFLG,u
 
-GTBT2:  ldb     MPCL,u
-        ldx     MPCPNT,u
-        abx
-        lda     ,x
-        inc     MPCL,u
-        bne     GTBT3
+GTBT2:  ldx     MPCPNT,u        * load absolute pointer
+        lda     ,x+             * fetch byte and increment absolute pointer
+        stx     MPCPNT,u        * save updated absolute pointer
+        inc     MPCL,u          * increment offset
+        bne     GTBT3           * if no overflow, done
         clr     MPCFLG,u
         inc     MPCM,u
         bne     GTBT3
@@ -104,6 +104,7 @@ GTBT3:  puls    x,pc
 PAGE:   std     DBLOCK,u
         lda     PMAX,u          * loop counter
         pshs    a               * push to stack
+        ldd     DBLOCK,u        * restore target page ID in D (corrupted by lda PMAX)
         leax    PTABLE,u        * bottom of paging table
 PG0:    cmpd    ,x++            * found it?
         beq     PG_FOUND
