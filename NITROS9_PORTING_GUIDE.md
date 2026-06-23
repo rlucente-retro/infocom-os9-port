@@ -1,211 +1,121 @@
-# COCOZIP to NitrOS-9 Porting Guide (Consolidated Specification)
+# NitrOS-9 Z-Machine Interpreter (OS9ZIP) Porting and Implementation Reference
 
-This document provides a comprehensive technical blueprint for porting the COCOZIP Z-machine interpreter from its original standalone disk-based environment to the NitrOS-9 operating system (Level 1 and Level 2).
-
----
-
-## 1. Process and Memory Architecture (OS-9 Native)
-
-The port follows the standard NitrOS-9 process model, utilizing the kernel's memory management to allocate and protect resources.
-
-### 1.1 Data Area Allocation
-- **Module Header:** The interpreter's Program Module header defines the required static data area size (e.g., 1024 bytes).
-- **F$Fork / F$Chain:** When the shell launches the interpreter, the kernel allocates this initial data area.
-- **Dynamic Allocation (F$Mem):** At startup, the interpreter uses `F$Mem` to expand its data area. The prototype employs an iterative strategy, starting with a minimum requirement (e.g., 8 pages/2KB for file buffers) and repeatedly requesting more memory from the kernel until a maximum limit (e.g., 160 pages/40KB) is reached or the allocation fails, ensuring the largest possible paging window is available.
-- **Process Data Area:** This area (accessible via offsets from the data pointer `U`) contains:
-    - **Global State:** `cur_cols`, `cur_rows`, `cur_x`, `cur_y`, `page_lines`, `was_cr`.
-    - **Transient Buffers:** `display_codes` (3 bytes for escape sequences), `dev_opts` (32 bytes for terminal status).
-    - **Z-Machine Buffers:** Pointers to the dynamic memory blocks for story preload and paging.
-
-### 1.2 Logical Memory Map (Conceptual)
-The logical address space of the process is organized by the kernel at runtime.
-
-| Logical Region | Description |
-| :--- | :--- |
-| **Data Area** | Starts at `$0000` (relative to process). Contains variables, stacks, preload, and paging buffers. |
-| **Program Module** | The executable code, loaded by the kernel. Can occupy memory up to `$FEFF`. |
-| **System Area** | `$FF00` - `$FFFF`. Reserved for I/O and System Vectors. |
+This document serves as the technical reference for the completed port of the Infocom Z-machine interpreter (ZIP) to the NitrOS-9 operating system (Level 1 and Level 2).
 
 ---
 
-## 2. Display and I/O Management (Dynamic)
+## 1. Process and Memory Architecture
 
-The port is designed to be hardware-agnostic and adapt to various screen dimensions (e.g., 32x16, 40x24, 80x24, or 80x30).
+The interpreter is built on the NitrOS-9 native process model. All code is position-independent and reentrant, using the `U` register to locate the dynamically allocated process workspace.
 
-### 2.1 Screen Size Detection
-The interpreter determines the screen dimensions at runtime using the following priority:
-1.  **Command-line Overrides:** Parses the parameter area (at `X`) for specific strings: `32x16`, `40x24`, `40x30`, `80x24`, `80x30` (case-insensitive for 'x').
-2.  **System Query:** Calls `I$GetStt` with `SS.ScSiz` ($26) on Path 1.
-3.  **Defaults:** Fallback to 32x16 if detection fails.
-
-**Safety Checks:**
-Regardless of the detection method, the interpreter verifies that the dimensions are at least 10 columns by 4 rows. If the screen is too small, it should abort to prevent display corruption.
-
-**Note on 32x16 (VDG) Compatibility:**
-If 32x16 is detected, the interpreter must verify that the terminal driver supports reverse video (required for the status line). This is done by:
-1.  Calling `F$Link` for the `TERM` device descriptor.
-2.  Checking the byte at offset `$26` (VDG type/options).
-3.  If the value is not `$02` (Reverse Video), the interpreter should abort with an error message, as the standard VDG T1 mode is insufficient.
-
-### 2.2 Hardware Context
-- **Global Variables:** `cur_cols` and `cur_rows` store the detected dimensions.
-- **Status Line Area:** Row 0 (Columns 0 to `cur_cols-1`).
-- **Play Area:** Rows 1 to `cur_rows-1`.
-- **Character Encoding:** ASCII compatible.
-- **Driver Convention:** Uses standard NitrOS-9 `I$Write` calls to the terminal path.
-
-### 2.3 Terminal Control Codes (Abstraction)
-The prototype uses standard NitrOS-9 VDG terminal escape sequences:
-- **Move Cursor:** `$02 <col+32> <row+32>`.
-- **Clear Screen:** `$0C` (Form Feed).
-- **Reverse Video:** The interpreter uses a function vector (`prtinv_vec`) to handle inverse text, allowing it to adapt to different terminal drivers:
-    - **Level 1 (VDG):** Converts uppercase characters to lowercase (which appear as inverse on standard VDG) and uses `$80` for inverted spaces.
-    - **Level 2 (Windowing):** Uses standard NitrOS-9 escape sequences: `REVON` (`$1F $20`) to enable and `REVOFF` (`$1F $21`) to disable reverse video.
-    - **Legacy Fallback:** On older VDG drivers, characters with the high bit set (`$80-$FF`) may also appear in reverse video.
-
-### 2.4 Status Line Management
-- **Visuals:** Row 0 must always appear in **Reverse Video**.
-- **Update Cycle:**
-    1.  Save cursor position or track manually.
-    2.  Move cursor to `(0, 0)`.
-    3.  Enable Reverse Video.
-    4.  Print Room Name (left-aligned), Score/Moves (right-aligned).
-    5.  Disable Reverse Video.
-    6.  Restore cursor position.
-
-### 2.5 Paging (`[more]` Logic)
-- **Threshold:** Triggered when `page_lines` reaches `cur_rows-2` (leaving space for the bottom row).
-- **Execution:** 
-    - Print `[more]` (in inverse video) at the bottom-left of the screen (Row `cur_rows-1`, Column 0).
-    - Wait for keypress via `I$Read` (Path 0).
-    - Overwrite `[more]` with spaces and reset `page_lines` to 0.
-
-### 2.6 Critical Implementation: Custom Scrolling
-Because standard drivers lack protected regions, a **Partial Screen Scroll** is mandatory to keep the Status Line (Row 0) static while the rest of the screen scrolls.
-
-#### Method A: Driver-Assisted Scrolling (Preferred)
-The most efficient "OS-9 way" is to use terminal escape sequences if the driver supports them:
-1.  **Working Area (`CWArea`):** Send `1B 32 <x> <y> <w> <h>` to restrict the scrolling region to Rows 1-29. Subsequent Carriage Returns will then naturally scroll only this region.
-2.  **Delete Line:** If `CWArea` is unavailable, manual scrolling can be achieved by moving the cursor to Row 1 and sending the **Delete Line** code (`1B 5B 4D` or `$1F $22` depending on driver). This shifts all lines below Row 1 up, leaving Row 0 untouched.
-
-#### Method B: RAM Shadow Buffer (Portable Fallback)
-For "dumb" terminals or basic Level 1 drivers that do not support line operations:
-1.  **Allocation:** At startup, use `F$Mem` to allocate a `cur_cols * cur_rows` byte buffer in the data area.
-2.  **Tracking:** All characters sent to the screen are also mirrored into this buffer.
-3.  **Manual Scroll:** 
-    - When a scroll is needed, use a high-speed assembly loop (`LDU/STU`) to shift rows 2 through `cur_rows-1` up by one row in the RAM buffer.
-    - Fill the last row of the buffer with spaces.
-    - Re-print the affected rows to the terminal.
-4.  **Note:** While slower on serial terminals, this method is 100% portable across all NitrOS-9 platforms and drivers.
-
-#### Method D: Redraw Status Line on Scroll (Current Prototype)
-A lightweight alternative for drivers without windowing or line deletion:
-1.  **Trigger:** When `cur_y` reaches `cur_rows - 2`, move the cursor to `(0, cur_rows-1)`.
-2.  **Scroll:** Send an ASCII LF (`$0A`). This scrolls the entire screen up.
-3.  **Restore:** Immediately move the cursor to `(0, 0)` and redraw the Status Line (Row 0).
-4.  **Sync:** Move the cursor back to the start of the "new" bottom line (still `cur_rows - 2`) to continue output.
-
-### 2.7 Character Handling and Formatting
-The interpreter performs manual text processing to ensure consistent output across different terminal types.
-
-- **Tab Expansion:** Horizontal tabs ($09) are not sent directly to the driver. Instead, the interpreter expands them into spaces, with tab stops set every 8 columns.
-- **CRLF Normalization:** The interpreter handles both CR ($0D) and LF ($0A) characters. To avoid double-spacing, it employs a state variable (`was_cr`) to detect and ignore an LF immediately following a CR.
-- **Automatic Wrapping:** When the cursor reaches `cur_cols`, the interpreter automatically triggers a newline (and paging/scrolling logic if necessary) before printing the next character.
+### 1.1 Memory Expansion Sequence (`F$Mem`)
+Upon startup, the process allocates its dynamic Direct Page and static variables area (defined by `STATIC_SIZE equ $0A00`). It then performs a dynamic memory search to allocate buffer space:
+1.  **Header Loading:** The interpreter expands memory by 256 bytes to load the Z-code story header.
+2.  **Size Detection:** It extracts the boundary of the dynamic story segment (`ZENDLD` offset `4`) to calculate the size of the preload data (`ZPURE = ZENDLD + 1` pages).
+3.  **Target Paging Allocation:** The interpreter tries to allocate memory for the entire `ZPURE` preload plus 16 swapping pages. If this request fails, it falls back to a minimum memory requirement of `ZPURE + 8` swapping pages.
+4.  **Optimal Expansion:** Starting from the successfully allocated base, the interpreter runs an incremental loop, requesting 1 more page (256 bytes) via `F$Mem` in each iteration until it reaches a maximum of `ZPURE + 160` pages, or the allocation fails.
+5.  **Parameter Configuration:** The interpreter sets:
+    -   `PAGE0,u` (the RAM page MSB of the swapping buffer start) immediately following the preload area.
+    -   `PMAX,u` (the total number of swapping page slots) as `Total dynamic pages - ZPURE`.
 
 ---
 
-## 3. System Services and Signal Handling
+## 2. Display and Terminal I/O Management
 
-### 3.1 Signal Interception
-To ensure clean termination and handle user interrupts (e.g., `Ctrl-C` / `Keyboard Abort`), the interpreter establishes a signal trap immediately upon startup:
-1.  **Setup:** Call `F$Icpt` with the address of a signal handler routine.
-2.  **Handler:** The handler should typically close open paths and exit via `F$Exit`.
+To accommodate different terminal drivers and screens (VDG 32x16, 40-column, 80-column), the display sub-system is dynamically configured at runtime.
 
-### 3.2 Terminal State Management
-During blocking input operations (like `[more]` paging):
-1.  **Echo Control:** Use `I$GetStt`/`I$SetStt` with `SS.Opt` to temporarily disable terminal echo (`PD.EKO`) so that the paging keypress doesn't appear on screen.
-2.  **Restoration:** Always restore the original terminal options after the keypress is received.
+### 2.1 Screen Dimension Resolution
+The interpreter determines the screen rows and columns in the following order of priority:
+1.  **Command-Line Parameter:** Parses the parameter area pointed to by `X` at entry for resolution strings (e.g. `80x24`, `32x16`).
+2.  **OS-9 System Query:** If no override is provided, it performs an `I$GetStt` status call with `SS.ScSiz` (`$26`) on stdout (Path 1).
+3.  **Default Fallback:** Defaults to a standard 32x16 terminal.
 
----
+**Validation Check:** If the resolved dimensions are smaller than 10 columns by 4 rows, the interpreter aborts immediately.
 
-## 4. Virtual Memory and Paging (File-Based)
+### 2.2 VDG Reverse Video Support
+When running on Level 1 systems with a 32x16 VDG screen, the status line requires reverse video support. The interpreter:
+1.  Calls `F$Link` for the `TERM` device descriptor.
+2.  Checks the VDG type/options byte at offset `$26`.
+3.  If the value is not `$02` (which enables reverse video capabilities on VDG), the program prints an error and exits cleanly.
 
-To support standard 64K hardware, the interpreter uses a file-backed paging system.
+### 2.3 Terminal Codes Abstraction
+To print characters in reverse video, the interpreter uses a function vector `prtinv_vec` populated during initialization:
+*   **Level 1 (VDG):** Maps uppercase characters to lowercase (which are represented as inverse on a standard VDG text screen) and uses character `$80` for inverted spaces.
+*   **Level 2 (ANSI/VT100 Windowing):** Emits standard escape code sequences: `REVON` (`$1F $20`) and `REVOFF` (`$1F $21`).
 
-### 4.1 Strategy: Buffered File Access
-1.  **File Handle:** Keep the story file path open throughout the execution.
-2.  **Preload:** Load the first ~8KB of the story directly into the reserved space in the data area at startup. This ensures the Z-Header and core global data are always resident.
-3.  **Paging Window:** A 4KB RAM buffer (16 Z-pages) reserved in the data area acts as a sliding window.
-4.  **Demand Paging:** When the Z-machine requests a page outside the preload:
-    - Check if the requested virtual address is already in the buffer.
-    - If not, calculate the 32-bit file offset: `Offset = Virtual_Page * 256`.
-    - Call `I$Seek` (Function `$88`) to position the file pointer.
-    - Call `I$Read` (Function `$89`) to load 4KB into the buffer.
-    - Update the tracking variable for the current window base.
+### 2.4 Status Line Rendering (Row 0)
+The status bar (containing room name, score, and moves or time) is printed at Row 0 using reverse video. The interpreter manually moves the cursor to `(0, 0)`, outputs the rooms and score string left- and right-aligned, and then restores the cursor to the text input position.
 
-### 4.2 Address Translation (Z-Page to Logical)
-1.  **If Page < ZPURE:** Address = `PRELOAD_BASE + (Page * 256)`.
-2.  **If Page >= ZPURE:**
-    - Is `(Page * 256)` within the current window?
-    - If No: Perform `I$Seek`/`I$Read` to refresh window.
-    - Address = `WINDOW_BASE + ((Page * 256) % 4096)`.
+### 2.5 Word-Wrapping and Scrolling
+- **Text PAUSE (`[more]` logic):** When the output line counter reaches `cur_rows-2`, the output pauses and prompts the user with `[more]` in inverse video. The terminal input echo is temporarily disabled (`PD.EKO`), a single key is read from Path 0, the echo is restored, and the `[more]` text is cleared.
+- **Partial-Screen Scroll:** To keep the status line on Row 0 untouched when the text scrolls, the interpreter:
+  1.  Moves the cursor to `(0, cur_rows-1)` when it reaches the bottom boundary.
+  2.  Sends an ASCII LF (`$0A`) to scroll the entire screen up.
+  3.  Immediately moves the cursor to `(0, 0)` and redrafts the reverse-video Status Line.
+  4.  Moves the cursor back to the bottom line to continue output.
 
 ---
 
-## 5. File-Based Save/Restore (Detailed)
+## 3. Dynamic File-Paging System
 
-Replaces raw sector writing with named files.
+Paging Z-code from the story file is managed through a table-based Least Recently Used (LRU) paging scheme.
 
-### 5.1 Binary Save Layout
-| Offset (Hex) | Size | Description |
-| :--- | :--- | :--- |
-| `$0000` | 2 | **Game ID:** From `ZCODE + ZID` |
-| `$0002` | 2 | **OZSTAK:** Saved stack pointer from Z-Machine |
-| `$0004` | 2 | **Stack Pointer:** Hardware `U` register |
-| `$0006` | 1 | **ZPC High:** Program Counter MSB |
-| `$0007` | 2 | **ZPC Low:** Program Counter LSBs |
-| `$0009` | 23| **Reserved:** Future metadata |
-| `$0020` | 32| **Locals:** 15 variables + frame info |
-| `$0040` | 512| **Z-Stack:** Current Z-machine stack data |
-| `$0240` | Var | **Preload:** `(ZPURBT + 1) * 256` bytes |
+### 3.1 LRU Buffer Management
+The paging system tracks buffers through two structures located in the workspace:
+*   `PTABLE`: Maps the page slot index to its current resident Z-code page number (2 bytes per entry).
+*   `LRUMAP`: Tracks timestamps for each page buffer (1 byte per entry).
 
-### 5.2 I/O Sequence
-- **Save:** `I$Create` -> `I$Write` (Header) -> `I$Write` (Locals) -> `I$Write` (Stack) -> `I$Write` (Preload) -> `I$Close`.
-- **Restore:** `I$Open` -> `I$Read` (Header) -> Verify ID -> `I$Read` (Data) -> `I$Close`.
-
----
-
-## 6. Redundant Legacy Functionality (Retirement List)
-
-The following original CoCo 2 standalone code must be **removed**:
-- **ROM Banking:** `ROMIN`, `ROMOUT`.
-- **Disk Geometry:** `UDIV`, `GETDSK`.
-- **Hardware Drivers:** `MYCON` (Disk), `MYCAT` (Keyboard), `MYCHR` (Screen).
-- **Interrupts:** `DIRQSV`.
+### 3.2 Demand Swapping (`PAGE` and `GETDSK`)
+When the interpreter requests a Z-code byte:
+1.  **Preload Check:** If the requested page is less than `ZPURE`, it is accessed directly from the memory-resident preload at `zcode_ptr,u`.
+2.  **Cache Lookup:** If the page is `>= ZPURE`, the interpreter searches `PTABLE` to check if the page is already cached in RAM.
+    -   *Hit:* The page's timestamp in `LRUMAP` is updated to the current `STAMP` value.
+    -   *Miss:* The page must be swapped into RAM:
+        1.  The interpreter runs `EARLY` to search `LRUMAP` and locate the least recently used page buffer.
+        2.  It updates `PTABLE` with the new page assignment.
+        3.  It calculates the 32-bit file offset: `Offset = DBLOCK * 256`.
+        4.  It calls `I$Seek` to position the file pointer inside the open story file path (`path_num`).
+        5.  It calls `I$Read` to load exactly 256 bytes into the target buffer.
+3.  **Address Translation:** The absolute address is calculated: `Buffer_Start + (Buffer_Index * 256) + Page_Offset`.
 
 ---
 
-## 7. Command Line Interface
+## 4. File-Based Save/Restore
 
-The interpreter acts as a standard shell utility.
-- **Usage:** `zip <story_file_path> [<cols>x<rows>]`
-- **Parameter Parsing:** 
-    - At entry, register `X` points to the parameter area.
-    - Extract the story pathlist (terminates at space or CR).
-    - Optionally parse the screen size (e.g., `80x24`).
-    - Call `I$Open` on the story path.
+The original standalone track-and-sector disk writing is replaced by standard named save files.
+
+### 4.1 Save State Layout (File Structure)
+The save state is written as a contiguous binary file structured as follows:
+
+| Offset (Hex) | Size (Bytes) | Description |
+|:---|:---|:---|
+| `$0000` | 32 | **Header Data Buffer:** Stores the Game ID (`ZID`), `OZSTAK`, stack pointer `Y`, program counters `ZPCH`/`ZPCM`/`ZPCL`, and metadata padding. |
+| `$0020` | 510 | **Z-Stack:** The dynamic Z-machine stack space. |
+| `$021E` | `ZPURE * 256` | **Impure Game State Preload:** Dynamic memory variables and writeable game data. |
+
+### 4.2 Save/Restore I/O Sequence
+- **Save Operation:**
+  1.  Prompts the user for a filename and reads it into `BUFSAV`.
+  2.  Creates the file via `I$Create` with Read/Write permissions.
+  3.  Copies state registers into `LOCALS` and writes the 32-byte header.
+  4.  Writes the 510-byte `ZSTACK`.
+  5.  Writes `ZPURE * 256` bytes of the dynamic preload.
+  6.  Closes the file via `I$Close`.
+- **Restore Operation:**
+  1.  Prompts the user for a filename.
+  2.  Opens the file via `I$Open` in Read mode.
+  3.  Reads the 32-byte header and verifies the Game ID matches `ZID`.
+  4.  Reads the 510-byte `ZSTACK` and the `ZPURE * 256` bytes of preload.
+  5.  Closes the file via `I$Close`, restores state registers, and invalidates the program counter cache (`ZPCFLG`).
 
 ---
 
-## 8. Execution Summary
+## 5. Retired Standalone Code
 
-### 8.1 Startup Sequence
-1.  **Launch:** Shell calls `F$Fork`.
-2.  **Init:** Parse story pathname from parameter area.
-3.  **Load:** Open story file, keep path open for paging.
-4.  **Preload:** Read the initial static Z-code into the reserved data area.
-5.  **Warmstart:** Initialize Z-machine state and begin execution loop.
+The following modules, hardware-specific entry points, and ROM-dependent routines from the original DECB version have been **completely retired** and removed from the codebase:
 
-### 8.2 Termination Sequence
-1.  **Files:** Close all open file paths.
-2.  **Exit:** Terminate process via `F$Exit`.
+*   **ROM Management (`ROMON`/`ROMOFF`):** Replaced by standard OS-9 process address isolation.
+*   **Direct Hardware Disk Control (`MYCON`/`DSKCON`):** Disk operations are handled via the OS-9 file manager filesystem calls (`I$Seek`/`I$Read`/`I$Write`).
+*   **Low-Level Interrupts (`DIRQSV`):** Replaced by OS-9 kernel process scheduling.
+*   **Direct Keyboard Matrix Scanning (`MYCAT`/`POLCAT`):** Keyboard input is handled via standard console stream reads (`I$Read` on Path 0).
+*   **Hardcoded Video RAM Rendering (`MYCHR`/`CHROUT`):** Text output is rendered via standard console output writes (`I$Write` on Path 1).

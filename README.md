@@ -1,93 +1,69 @@
-# Infocom Z-machine Interpreter for TRS-80 Color Computer (ZIP/6809-C)
+# NitrOS-9 Z-Machine Interpreter for TRS-80 Color Computer (OS9ZIP)
 
-This project is a 6809 assembly language implementation of the Infocom Z-machine interpreter (ZIP) for the TRS-80 Color Computer (CoCo). It is designed to run on a 64K CoCo 2 and provides full support for any Infocom Version 3 Z-code games (e.g., Zork I, II, III, Planetfall, The Witness, Deadline, etc.).
+This repository contains the NitrOS-9 (Level 1 and Level 2) native port of the Infocom Z-machine interpreter (ZIP) for the TRS-80 Color Computer (CoCo) 3 and CoCo 2. 
 
-## Architecture Overview
+The interpreter runs as a standard user process under the NitrOS-9 operating system, supporting Infocom Version 3 Z-code games (such as *Zork I, II, III*, *Planetfall*, *The Witness*, *Deadline*, etc.) loaded directly from the OS-9 filesystem.
 
-The interpreter follows the standard Z-machine architecture but is heavily optimized for the 6809 CPU and the CoCo's hardware constraints. It uses a virtual memory paging system to handle games that are larger than the available RAM.
+---
 
-### Core Components
+## Architectural Features
 
-*   **Main Loop (`main.ASM`):** The central execution engine. It fetches opcodes, decodes them (0-OP, 1-OP, 2-OP, X-OP), and dispatches to specific handlers.
-*   **Paging System (`paging.ASM`):** A sophisticated virtual memory manager using a Least Recently Used (LRU) algorithm with timestamps. It allows the interpreter to access up to 128KB (or more) of Z-code by swapping 256-byte pages from disk into a RAM-resident buffer pool.
-*   **Z-String Handler (`zstring.ASM`):** Implements the complex Z-string compression and decoding logic, including support for three character sets, temporary/permanent shifts, and abbreviations (F-words).
-*   **Object & Property Handler (`objects.ASM`):** Manages the Z-machine's object tree and property tables, providing efficient traversal and manipulation.
-*   **I/O System (`ioprims.ASM`, `screen.ASM`):** Provides a 32-column text display, status line updates (Score/Moves or Time), and keyboard input. It includes specialized routines to bypass the CoCo's ROM so the interpreter can enable the full 64K RAM address space for Z-code storage and paging. This ensures hardware functionality remains available when the physical ROMs are swapped out.
-*   **Disk System (`disk.ASM`):** Handles track/sector-based disk I/O for both loading Z-code blocks and performing SAVE/RESTORE operations.
+*   **OS-9 Native Process model:** Position-independent, reentrant architecture using the `U` register to address the dynamic process data area.
+*   **Dynamic LRU Memory Paging:** At startup, the interpreter queries the kernel for memory via `F$Mem`. It dynamically scales its swapping space from a minimum of 8 pages (2KB) up to 160 pages (40KB), caching story file pages using a Least Recently Used (LRU) eviction policy.
+*   **File-System Integration:** Story file blocks are paged dynamically from disk using standard OS-9 filesystem requests (`I$Seek` / `I$Read`).
+*   **Adaptive Terminal Formatting:** Detects terminal dimensions at runtime via the `SS.ScSiz` status query or parses command-line parameters (e.g. `80x24`, `32x16`). It dynamically wraps text, displays a reverse-video status bar on Row 0, and handles `[more]` paging automatically.
+*   **File-Based Save/Restore:** Replaces track/sector-based saves with standard named save files in the OS-9 filesystem.
 
-## Memory Organization
+---
 
-The interpreter is designed to fit within the 64K address space. For a complete technical breakdown, see the [Detailed Memory Map](MEMORY.md).
+## Codebase Organization
 
-*   **Direct Page (Page 0):** Used for the most frequently accessed Z-machine variables (Opcode, Arguments, PC, MPC, etc.).
-*   **Machine Stack:** Standard 6809 stack for subroutine calls and local state.
-*   **Z-Stack:** Dedicated 255-word stack for Z-machine operations and CALL/RET state.
-*   **Paging Table & LRU Map:** Used by the paging system to track which Z-code pages are in RAM and when they were last accessed.
-*   **Preloaded Z-Code:** The "pure" part of the Z-code (header and initial data) is kept permanently in RAM.
-*   **Swapping Space:** A pool of RAM buffers used to cache "impure" and non-preloaded Z-code pages from disk.
+The project is structured into modular assembly components included by the master file:
 
-## Disk Organization
+*   `OS9_COCOZIP.ASM`: The master entry point and initialization file.
+*   `OS9_EQ.ASM`: Direct page equates and variable structures relative to the `U` register.
+*   `OS9_DISPATCH.ASM`: Dispatch tables for 0-OP, 1-OP, 2-OP, and Extended-OP instructions.
+*   `OS9_IO.ASM`: Console, keyboard input (with echo control), and utility functions.
+*   `OS9_DISK.ASM`: Target file seeking and page reading logic.
+*   `OS9_PAGING.ASM`: Memory page lookup, LRU tracking, and buffer eviction.
+*   `OS9_SUBS.ASM`: Core utility functions, sign extension, stack operations (push/pop), and PC branching.
+*   `OS9_OBJECTS.ASM`: Traversal and manipulation of the Z-machine object and property tables.
+*   `OS9_ZSTRING.ASM`: Decompression and decoding of compressed Z-strings and abbreviation tables.
+*   `OS9_READ.ASM`: Text parser, lexical analysis, and vocabulary matching.
+*   `OS9_SCREEN.ASM`: Layout control, reverse-video status bar updates, partial-screen line wrapping, and `[more]` paging.
+*   `OS9_MAIN.ASM`: Main Z-machine decoding and execution loop.
+*   `OS9_OPS.ASM`: Implementation of individual Z-machine opcodes, including math, logic, jumps, and Save/Restore.
 
-The interpreter expects the Z-code game data to be arranged on the disk in a specific format:
+---
 
-*   **Boot Track (Track 34):** Contains the initial loader (`boot.ASM`).
-*   **Story Data:** Starts at Track 2, Sector 1.
-*   **Save Slots:** Support for 7 save positions, each occupying 5 tracks on a separate save disk.
-
-## Building and Files
-
-The project is structured into multiple source files, with `cocozip.ASM` acting as the master file that includes all other components.
-
-*   `zequates.ASM`: Z-machine constants and memory layout.
-*   `main.ASM`: The main interpreter loop.
-*   `mainsubs.ASM`: Core utility subroutines.
-*   `dispatch.ASM`: Opcode dispatch tables.
-*   `ops*.ASM`: Implementation of the various Z-machine opcodes.
-*   `read.ASM`: Lexical analyzer and input parser.
-*   `paging.ASM`: Virtual memory and LRU paging.
-*   `zstring.ASM`: Z-string decoding and encoding.
-*   `objects.ASM`: Object and property manipulation.
-*   `ioprims.ASM`: Low-level hardware I/O.
-*   `screen.ASM`: High-level display and status line management.
-*   `disk.ASM`: Disk I/O and Save/Restore logic.
-*   `warm.ASM`: Interpreter initialization and startup.
-*   `boot.ASM`: Initial loader for the CoCo. This resides on the boot track (Track 34) and is responsible for loading the ZIP into RAM and starting it at `$1100` (the start of `warm.ASM`). Note that `boot.ASM` contains temporary versions of the ROM-replacement routines (`MYCON`, `MYCHR`, `DIRQSV`) which are only used during the boot process. Once the ZIP is loaded, these routines are redefined in `io.ASM` with full interpreter-level support.
-
-## Building the Project
+## Building and Running
 
 ### Prerequisites
+1.  **lwasm**: The `lwasm` assembler from the `coco-shelf` toolchain must be installed and in your `PATH`.
+2.  **NitrOS-9 Source / Defs**: Access to the NitrOS-9 kernel definitions (specifically `defsfile`) is required.
 
-1.  **Tooling**: This project requires the `coco-shelf` cross-development tools (specifically `lwasm` and `decb`) available at [https://github.com/strickyak/coco-shelf](https://github.com/strickyak/coco-shelf).
-2.  **Story Files**: You need a compiled Infocom Version 3 story file (typically ending in `.DAT` or `.z3`). These files are not included in this repository but are widely available across the internet (e.g., [The Obsessively Complete Infocom Catalog](https://eblong.com/infocom/) or other historical software repositories).
+### Build Instructions
+Run the default build target:
+```bash
+make
+```
+This compiles the master source file `OS9_COCOZIP.ASM` using `lwasm` and outputs the executable binary `OS9ZIP`, along with its map `OS9ZIP.map` and listing `OS9ZIP.list`.
 
-### Build Steps
+To generate a bootable NitrOS-9 JVC disk image (`os9test.dsk`) containing `OS9ZIP` and `ZORK1.DAT`:
+```bash
+make disk
+```
 
-1.  **Configure Paths**: Open the `Makefile` and update the following variables to match your local environment, or override them on the command line:
-    *   `SHELF`: The path to your local `coco-shelf` installation.
-    *   `STORY`: The path to the Version 3 story file you wish to bundle.
-    *   `DISK`: (Optional) The name of the output disk image (defaults to the story name with a `.dsk` extension).
-2.  **Compile and Construct Disk**: Run the following command in your terminal:
-    ```bash
-    make STORY=/path/to/your/story.z3 DISK=mygame.dsk
-    ```
-3.  **Output**: This will generate a formatted DECB disk image containing the boot loader, the interpreter, and the story data, ready for use in a Color Computer emulator like XRoar or MAME.
-
-
-## Version History
-
-*   **Version A (1984):** Initial archival.
-*   **Version C (1985):** Significant updates for OS9 compatibility and paging improvements.
-
-## Attribution
-
-The source code in this repository was originally sourced from the [infocom-zcode-terps](https://github.com/erkyrath/infocom-zcode-terps/tree/master/colorcomputer) repository maintained by Andrew Plotkin (erkyrath). For more context on Andrew Plotkin's effort to recover this and other Infocom tools, see the Ars Technica article: [Infocom’s ingenious code-porting tools for Zork and other games have been found](https://arstechnica.com/gaming/2023/11/infocoms-ingenious-code-porting-tools-for-zork-and-other-games-have-been-found/).
-
-Additionally, John Linville's series of articles on the RetroTinker blog provided valuable insights into building and using Z-machine tools for the CoCo:
-* [Building CoCo Games with Inform](https://retrotinker.blogspot.com/2017/11/building-coco-games-with-inform.html)
-* [Using Infocom's ZIP on the CoCo](https://retrotinker.blogspot.com/2017/11/using-infocoms-zip-on-coco.html)
-* [Building Infocom Disk Images for the CoCo](https://retrotinker.blogspot.com/2017/11/building-infocom-disk-images-for-coco.html)
-
-This version has been:
-*   **Fully Documented**: Added comprehensive block and inline comments to explain the architectural intent and low-level 6809 assembly logic.
-*   **Modernized**: Updated assembly directives and file structures for compatibility with modern cross-development tools like `lwasm`.
-*   **Automated**: Includes a `Makefile` for bit-perfect binary reconstruction and automated disk image (`.dsk`) generation.
+### Running the Interpreter
+Under the NitrOS-9 shell, execute `OS9ZIP` by specifying the story file path and optionally overriding the screen resolution:
+```bash
+OS9ZIP ZORK1.DAT [columns]x[rows]
+```
+Example (80x24 console):
+```bash
+OS9ZIP ZORK1.DAT 80x24
+```
+Example (standard CoCo 32-column screen):
+```bash
+OS9ZIP ZORK1.DAT 32x16
+```
