@@ -1,0 +1,21 @@
+# Build artifacts
+OS9ZIP
+*.list
+*.map
+*.bin
+*.dsk
+*.bak
+
+# Game data files
+ZORK1.DAT
+ZORK1_BACK.DAT
+ZORK1_CHECK.DAT
+ZORK1_IMG.DAT
+
+# Trace/log files
+trace.txt
+output.txt
+
+# Prototype binary/temp files
+protozip
+prototype_display/.swp
