@@ -20,7 +20,7 @@ The workspace is organized as follows:
 | `U + BUFFER` | 32 | **I/O Line Input Buffer** |
 | `U + BUFSAV` | 32 | **I/O Aux Buffer / Filename Storage** |
 | `U + status_buf` | 80 | **Transient Status Line Buffer** |
-| `U + STATIC_SIZE` | - | **Base of Story Preload (`zcode_ptr`)** |
+| `U + zcode_offset` | - | **Base of Story Preload (`zcode_ptr`)** |
 | `zcode_ptr` to `PAGE0` page | `ZPURE * 256` | **Permanently Resident Z-Code Preload** (Z-Header + static data) |
 | `PAGE0 * 256` to High Memory | `PMAX * 256` | **Virtual Memory Swapping Page Pool** (256-byte LRU cache pages) |
 
@@ -67,16 +67,17 @@ These variables are defined starting at offset `0` relative to the `U` register.
 | `$61` | `global_ptr`| 2 | Absolute pointer to the global table in RAM |
 | `$63` | `vocab_ptr` | 2 | Absolute pointer to the vocab table in RAM |
 | `$65` | `TIMEFL` | 1 | Score layout select flag (0 = Score/Moves, non-zero = Time) |
-| `$79` | `zcode_ptr` | 2 | Base address of story file preload area (`U + STATIC_SIZE`) |
-| `$7B` | `zsp_top` | 2 | Base address of Z-Stack top |
-| `$7D` | `cur_cols` | 1 | Total columns of terminal (e.g. 32, 40, 80) |
-| `$7E` | `cur_rows` | 1 | Total rows of terminal (e.g. 16, 24, 30) |
-| `$7F` | `cur_x` | 1 | Current terminal cursor column coordinate |
-| `$80` | `cur_y` | 1 | Current terminal cursor row coordinate |
-| `$81` | `inv_flag` | 1 | Invert output flag (0 = Normal text, 1 = Reverse video) |
-| `$82` | `page_lines`| 1 | Lines outputted since last screen pause |
-| `$83` | `was_cr` | 1 | CR state tracker to prevent double newlines |
-| `$84` | `path_num` | 1 | NitrOS-9 file path number for the open story file |
+| `$79` | `zcode_ptr` | 2 | Base address of story file preload area (`U + zcode_offset`) |
+| `$7B` | `zcode_offset`| 2 | Dynamic offset of Z-code preload (aligned with stack boundary) |
+| `$7D` | `zsp_top` | 2 | Base address of Z-Stack top |
+| `$7F` | `cur_cols` | 1 | Total columns of terminal (e.g. 32, 40, 80) |
+| `$80` | `cur_rows` | 1 | Total rows of terminal (e.g. 16, 24, 30) |
+| `$81` | `cur_x` | 1 | Current terminal cursor column coordinate |
+| `$82` | `cur_y` | 1 | Current terminal cursor row coordinate |
+| `$83` | `inv_flag` | 1 | Invert output flag (0 = Normal text, 1 = Reverse video) |
+| `$84` | `page_lines`| 1 | Lines outputted since last screen pause |
+| `$85` | `was_cr` | 1 | CR state tracker to prevent double newlines |
+| `$A9` | `path_num` | 1 | NitrOS-9 file path number for the open story file |
 
 ---
 

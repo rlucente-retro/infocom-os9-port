@@ -31,9 +31,15 @@ clr_lp: clr     ,x+
         * 3. Restore parameter pointer
         puls    x
 
-        * Relocate stack pointer to the designated STATIC_SIZE boundary
-        * This ensures the stack is safe from preloaded Z-code data on Level 2.
-        leas    STATIC_SIZE,u
+        * Query initial memory size to find the stack boundary
+        ldd     #0
+        os9     F$Mem
+        std     zcode_offset,u
+
+        * Set zcode_ptr = U + zcode_offset
+        tfr     u,d
+        addd    zcode_offset,u
+        std     zcode_ptr,u
 
         * 4. Open the story file (X points to pathlist)
         * I$Open natively parses the pathlist and updates X to point PAST the pathlist.
@@ -117,13 +123,14 @@ SafetyCheck:
 
 AllocateBuffers:
         * Request space for static variables + 1 header page
-        ldd     #STATIC_SIZE+256
+        ldd     zcode_offset,u
+        addd    #256
         lbsr    GrowMemory
         lbcs    ExitProgram     * Fatal: not enough memory for header
 
-        * The dynamic data area starts at U + STATIC_SIZE.
+        * The dynamic data area starts at U + zcode_offset.
         tfr     u,d
-        addd    #STATIC_SIZE
+        addd    zcode_offset,u
         std     zcode_ptr,u     * Set pointer for header/Z-code
 
 RESTART_GAME:
@@ -169,7 +176,7 @@ RESTART_GAME:
         
         tfr     b,a
         clrb                    * D = dynamic size in bytes
-        addd    #STATIC_SIZE    * D = total desired size
+        addd    zcode_offset,u  * D = total desired size
         pshs    y               * Protect Z-stack pointer!
         lbsr    GrowMemory
         puls    y
@@ -182,7 +189,7 @@ RESTART_GAME:
         
         tfr     b,a
         clrb
-        addd    #STATIC_SIZE
+        addd    zcode_offset,u
         pshs    y
         lbsr    GrowMemory
         puls    y
@@ -204,7 +211,7 @@ GrowMemLoop:
         ldb     TEMP2+1,u
         tfr     b,a
         clrb
-        addd    #STATIC_SIZE    * D = desired size
+        addd    zcode_offset,u  * D = desired size
         pshs    y
         lbsr    GrowMemory
         puls    y
@@ -216,25 +223,25 @@ MemGrowthFail:
         ldb     TEMP2+1,u
         tfr     b,a
         clrb
-        addd    #STATIC_SIZE    * D = total size in bytes (last successful size)
+        addd    zcode_offset,u  * D = total size in bytes (last successful size)
 
 MemGrowthDone:
 
         * 11. Set Paging Parameters based on ZPURE and memory returned
         * D contains the new high limit address.
-        * Preload starts at U + STATIC_SIZE and is ZPURE * 256 bytes
+        * Preload starts at U + zcode_offset and is ZPURE * 256 bytes
         * PAGE0 must start AFTER the preload
         tfr     u,d
-        addd    #STATIC_SIZE    * D = start of preload
+        addd    zcode_offset,u  * D = start of preload
         pshs    d
         lda     ZPURE,u
         clrb                    * D = preload size
         addd    ,s++            * D = end of preload (start of buffers)
         sta     PAGE0,u         * Store MSB of swapping space start
         
-        * Calculate PMAX: (TotalSize - STATIC_SIZE - PreloadSize) / 256
+        * Calculate PMAX: (TotalSize - zcode_offset - PreloadSize) / 256
         * Current TotalSize is in D from F$Mem.
-        subd    #STATIC_SIZE    * D = Total dynamic size in bytes
+        subd    zcode_offset,u  * D = Total dynamic size in bytes
         tfr     a,b             * B = Total dynamic pages
         subb    ZPURE,u         * B = Total swapping pages
         stb     PMAX,u

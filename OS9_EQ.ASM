@@ -119,6 +119,7 @@ TDRIVE          rmb     1       * TEMP GAME DRIVE
 
 *--- OS-9 Specific Data Area (Still in Direct Page) ---
 zcode_ptr       rmb     2       * Pointer to base of Z-code in RAM
+zcode_offset    rmb     2       * Dynamic offset of Z-code preload (aligned with stack)
 zsp_top         rmb     2       * Top of Z-stack (absolute address)
 cur_cols        rmb     1       * Current terminal columns
 cur_rows        rmb     1       * Current terminal rows

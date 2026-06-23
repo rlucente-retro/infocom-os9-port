@@ -8,15 +8,17 @@ This document serves as the technical reference for the completed port of the In
 
 The interpreter is built on the NitrOS-9 native process model. All code is position-independent and reentrant, using the `U` register to locate the dynamically allocated process workspace.
 
-### 1.1 Memory Expansion Sequence (`F$Mem`)
-Upon startup, the process allocates its dynamic Direct Page and static variables area (defined by `STATIC_SIZE equ $0A00`). It then performs a dynamic memory search to allocate buffer space:
-1.  **Header Loading:** The interpreter expands memory by 256 bytes to load the Z-code story header.
-2.  **Size Detection:** It extracts the boundary of the dynamic story segment (`ZENDLD` offset `4`) to calculate the size of the preload data (`ZPURE = ZENDLD + 1` pages).
-3.  **Target Paging Allocation:** The interpreter tries to allocate memory for the entire `ZPURE` preload plus 16 swapping pages. If this request fails, it falls back to a minimum memory requirement of `ZPURE + 8` swapping pages.
-4.  **Optimal Expansion:** Starting from the successfully allocated base, the interpreter runs an incremental loop, requesting 1 more page (256 bytes) via `F$Mem` in each iteration until it reaches a maximum of `ZPURE + 160` pages, or the allocation fails.
-5.  **Parameter Configuration:** The interpreter sets:
+### 1.1 Stack Pointer Safety and Dynamic Memory Expansion Sequence (`F$Mem`)
+Under NitrOS-9, the stack pointer `S` is initialized by the kernel to the top of the initial memory block allocated for the process (which is at least `STATIC_SIZE` bytes, but can be larger due to system page alignment limits on Level 2). To prevent stack corruption and avoid dangerous stack relocations:
+1.  **Dynamic Stack Boundary Detection:** At startup, the interpreter queries the initial memory block size via `F$Mem` (using `D = 0`). The returned size is saved in `zcode_offset`, establishing a safe stack boundary below which the system stack and variables reside.
+2.  **Preload Base Allocation:** The story preload base `zcode_ptr` is dynamically mapped to `U + zcode_offset`. This places all loaded Z-code and swapping buffers entirely above the stack area, guaranteeing stack safety on both Level 1 and Level 2 without relocating the stack pointer.
+3.  **Header Loading:** The interpreter expands memory to `zcode_offset + 256` bytes to load the first 256 bytes of the Z-code story header.
+4.  **Size Detection:** It extracts the boundary of the dynamic story segment (`ZENDLD` offset `4`) to calculate the size of the preload data (`ZPURE = ZENDLD + 1` pages).
+5.  **Target Paging Allocation:** The interpreter tries to allocate memory for the entire `ZPURE` preload plus 16 swapping pages relative to the stack boundary (total size `zcode_offset` + `(ZPURE + 16) * 256` bytes). If this fails, it falls back to a minimum memory requirement of `ZPURE + 8` swapping pages.
+6.  **Optimal Expansion:** Starting from the successfully allocated base, the interpreter runs an incremental loop, requesting 1 more page (256 bytes) via `F$Mem` in each iteration until it reaches a maximum of `ZPURE + 160` pages, or the allocation fails.
+7.  **Parameter Configuration:** The interpreter sets:
     -   `PAGE0,u` (the RAM page MSB of the swapping buffer start) immediately following the preload area.
-    -   `PMAX,u` (the total number of swapping page slots) as `Total dynamic pages - ZPURE`.
+    -   `PMAX,u` (the total number of swapping page slots) as `Total dynamic pages - ZPURE` (where total dynamic pages is computed by subtracting `zcode_offset` from the total allocated memory).
 
 ---
 

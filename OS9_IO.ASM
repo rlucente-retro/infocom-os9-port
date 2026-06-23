@@ -297,7 +297,7 @@ MoveCursorToXY:
 *-------------------------------------------------------------------------------
 WriteStdoutChar: 
         sta     IOCHAR,u        * Save char in DP
-        pshs    a,x,y           * Protect registers for caller
+        pshs    a,b,x,y         * Protect registers for caller
         tst     cur_y,u
         bne     wsc_normal
         ldb     cur_x,u
@@ -311,7 +311,7 @@ wsc_normal:
         leax    IOCHAR,u        * Point to character
         ldy     #1              
         os9     I$Write
-        puls    a,x,y,pc        
+        puls    a,b,x,y,pc        
 
 *-------------------------------------------------------------------------------
 * L1Scroll: Level 1 scroll content area (LF at bottom + header redraw)
