@@ -43,7 +43,12 @@ The project is structured into modular assembly components included by the maste
 2.  **NitrOS-9 Source / Defs**: Access to the NitrOS-9 kernel definitions (specifically `defsfile`) is required.
 
 ### Build Instructions
-Run the default build target:
+Before building, ensure that the following variables are configured correctly in the `Makefile` to match your local development environment:
+*   `SHELF`: The path to the root of your local `coco-shelf` installation.
+*   `LWASM`: The path to the `lwasm` assembler executable (typically inside `$(SHELF)/bin`).
+*   `NITROS9`: The path to the root of your local `nitros9` repository (used to locate system definition files).
+
+Once configured, run the default build target:
 ```bash
 make
 ```
