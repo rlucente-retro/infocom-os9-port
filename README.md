@@ -1,6 +1,6 @@
-# NitrOS-9 Z-Machine Interpreter for TRS-80 Color Computer (OS9ZIP)
+# NitrOS-9 Z-Machine Interpreter (OS9ZIP)
 
-This repository contains the NitrOS-9 (Level 1 and Level 2) native port of the Infocom Z-machine interpreter (ZIP) for the TRS-80 Color Computer (CoCo) 3 and CoCo 2. 
+This repository contains the NitrOS-9 (Level 1 and Level 2) native port of the Infocom Z-machine interpreter (ZIP). 
 
 The interpreter runs as a standard user process under the NitrOS-9 operating system, supporting Infocom Version 3 Z-code games (such as *Zork I, II, III*, *Planetfall*, *The Witness*, *Deadline*, etc.) loaded directly from the OS-9 filesystem.
 
@@ -49,7 +49,7 @@ make
 ```
 This compiles the master source file `OS9_COCOZIP.ASM` using `lwasm` and outputs the executable binary `OS9ZIP`, along with its map `OS9ZIP.map` and listing `OS9ZIP.list`.
 
-To generate a bootable NitrOS-9 JVC disk image (`os9test.dsk`) containing `OS9ZIP` and `ZORK1.DAT`:
+To generate a bootable NitrOS-9 disk image (`os9test.dsk`) containing `OS9ZIP` and `ZORK1.DAT`:
 ```bash
 make disk
 ```
@@ -63,7 +63,7 @@ Example (80x24 console):
 ```bash
 OS9ZIP ZORK1.DAT 80x24
 ```
-Example (standard CoCo 32-column screen):
+Example (standard 32-column screen):
 ```bash
 OS9ZIP ZORK1.DAT 32x16
 ```
