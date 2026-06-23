@@ -31,6 +31,10 @@ clr_lp: clr     ,x+
         * 3. Restore parameter pointer
         puls    x
 
+        * Relocate stack pointer to the designated STATIC_SIZE boundary
+        * This ensures the stack is safe from preloaded Z-code data on Level 2.
+        leas    STATIC_SIZE,u
+
         * 4. Open the story file (X points to pathlist)
         * I$Open natively parses the pathlist and updates X to point PAST the pathlist.
         lda     #Read.
