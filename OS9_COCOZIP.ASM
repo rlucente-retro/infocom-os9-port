@@ -113,8 +113,8 @@ SafetyCheck:
 
 AllocateBuffers:
         * Request space for static variables + 1 header page
-        ldd     #STATIC_SIZE + 256
-        os9     F$Mem
+        ldd     #STATIC_SIZE+256
+        lbsr    GrowMemory
         lbcs    ExitProgram     * Fatal: not enough memory for header
 
         * The dynamic data area starts at U + STATIC_SIZE.
@@ -167,7 +167,7 @@ RESTART_GAME:
         clrb                    * D = dynamic size in bytes
         addd    #STATIC_SIZE    * D = total desired size
         pshs    y               * Protect Z-stack pointer!
-        os9     F$Mem
+        lbsr    GrowMemory
         puls    y
         bcc     GotInitialMem   * Succeeded with 16 pages!
         
@@ -180,7 +180,7 @@ RESTART_GAME:
         clrb
         addd    #STATIC_SIZE
         pshs    y
-        os9     F$Mem
+        lbsr    GrowMemory
         puls    y
         lbcs    ExitProgram     * Fatal: not even minimum memory available
         
@@ -202,7 +202,7 @@ GrowMemLoop:
         clrb
         addd    #STATIC_SIZE    * D = desired size
         pshs    y
-        os9     F$Mem
+        lbsr    GrowMemory
         puls    y
         bcs     MemGrowthFail   * Allocation failed: revert to previous count
         bra     GrowMemLoop
@@ -212,11 +212,7 @@ MemGrowthFail:
         ldb     TEMP2+1,u
         tfr     b,a
         clrb
-        addd    #STATIC_SIZE
-        pshs    y
-        os9     F$Mem
-        puls    y
-        * (This F$Mem must succeed since it was previously successful)
+        addd    #STATIC_SIZE    * D = total size in bytes (last successful size)
 
 MemGrowthDone:
 
@@ -398,6 +394,37 @@ err_os9_len equ *-err_os9
 SignalHandler:
         clrb                    * Exit status 0
         os9     F$Exit
+
+*-------------------------------------------------------------------------------
+* GrowMemory: Expand memory to D bytes if D is larger than current size.
+* Input: D = desired size in bytes
+* Exit: D = current size in bytes, Carry clear on success, Carry set on error.
+*-------------------------------------------------------------------------------
+GrowMemory:
+        pshs    d,y             * Save desired size and Y
+        ldd     #0
+        os9     F$Mem           * Query current size
+        bcs     gm_err          * If error, exit
+        std     TEMP,u          * TEMP = current size
+        ldd     ,s              * Retrieve desired size
+        cmpd    TEMP,u
+        bls     gm_same         * If desired <= current, do nothing
+        
+        * Desired > current: perform allocation
+        os9     F$Mem
+        bcs     gm_err
+        std     ,s              * Update saved D with new size
+        bra     gm_exit
+        
+gm_same:
+        ldd     TEMP,u          * Return current size in D
+        std     ,s
+gm_exit:
+        puls    d,y,pc
+gm_err:
+        puls    d,y
+        orcc    #$01            * Set carry
+        rts
 
 *-------------------------------------------------------------------------------
 * Exit Logic
