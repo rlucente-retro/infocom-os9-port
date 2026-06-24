@@ -245,6 +245,10 @@ MemGrowthDone:
         subd    zcode_offset,u  * D = Total dynamic size in bytes
         tfr     a,b             * B = Total dynamic pages
         subb    ZPURE,u         * B = Total swapping pages
+        cmpb    #160            * Cap at max table size
+        blo     pmax_ok
+        ldb     #160
+pmax_ok:
         stb     PMAX,u
         stb     MASK+1,u        * Total dynamic pages for paging loop
 

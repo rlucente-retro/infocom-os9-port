@@ -121,10 +121,12 @@ PG0:    cmpd    ,x++            * found it?
         stb     DBUFF,u         * tell disk where to put data
         clr     DBUFF+1,u
 
-        leax    PTABLE,u
         ldb     ZPAGE,u
-        aslb                    * 2 bytes per entry
-        leax    b,x
+        clra
+        aslb
+        rola                    * 2 bytes per entry
+        leax    PTABLE,u
+        leax    d,x
         ldd     DBLOCK,u
         std     ,x              * splice into table
 
@@ -138,8 +140,9 @@ PG_FOUND:
 
 * Update timestamp
 PG1:    ldb     ZPAGE,u
+        clra
         leax    LRUMAP,u
-        lda     b,x
+        lda     d,x
         cmpa    STAMP,u
         beq     PG5             * already current
 
@@ -150,10 +153,12 @@ PG1:    ldb     ZPAGE,u
         bsr     EARLY
         leax    LRUMAP,u
         clrb
-PG2:    lda     b,x
+PG2:    clra
+        leay    d,x             * Y = LRUMAP + B
+        lda     ,y
         beq     PG3             * skip zero
         suba    LRU,u
-        sta     b,x
+        sta     ,y
 PG3:    incb
         cmpb    PMAX,u
         blo     PG2
@@ -164,9 +169,11 @@ PG3:    incb
 
 * Stamp the page
 PG4:    ldb     ZPAGE,u
+        clra
         leax    LRUMAP,u
+        leax    d,x
         lda     STAMP,u
-        sta     b,x
+        sta     ,x
 
 PG5:    ldb     ZPAGE,u
         addb    PAGE0,u         * return absolute page MSB
