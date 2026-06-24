@@ -231,6 +231,7 @@ MemGrowthDone:
         * D contains the new high limit address.
         * Preload starts at U + zcode_offset and is ZPURE * 256 bytes
         * PAGE0 must start AFTER the preload
+        pshs    d               * Save TotalSize on stack
         tfr     u,d
         addd    zcode_offset,u  * D = start of preload
         pshs    d
@@ -240,7 +241,7 @@ MemGrowthDone:
         sta     PAGE0,u         * Store MSB of swapping space start
         
         * Calculate PMAX: (TotalSize - zcode_offset - PreloadSize) / 256
-        * Current TotalSize is in D from F$Mem.
+        puls    d               * Restore TotalSize in D
         subd    zcode_offset,u  * D = Total dynamic size in bytes
         tfr     a,b             * B = Total dynamic pages
         subb    ZPURE,u         * B = Total swapping pages
