@@ -121,6 +121,7 @@ TDRIVE          rmb     1       * TEMP GAME DRIVE
 zcode_ptr       rmb     2       * Pointer to base of Z-code in RAM
 zcode_offset    rmb     2       * Dynamic offset of Z-code preload (aligned with stack)
 zsp_top         rmb     2       * Top of Z-stack (absolute address)
+zstack_limit    rmb     2       * Limit (bottom) of Z-stack (absolute address)
 cur_cols        rmb     1       * Current terminal columns
 cur_rows        rmb     1       * Current terminal rows
 cur_x           rmb     1       * Current cursor X position (0 to cols-1)

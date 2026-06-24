@@ -126,12 +126,9 @@ PSHSTK: ldd     TEMP,u
 * PSHDZ: Push D to Z-stack (Y)
 *-------------------------------------------------------------------------------
 PSHDZ:  std     ,--y
-        pshs    x
-        leax    ZSTACK,u        * X = absolute address of ZSTACK
-        pshs    y
-        cmpx    ,s++            * Compare ZSTACK base to current Y
-        bhi     OVER            * If ZSTACK > Y, stack has overflowed
-        puls    x,pc
+        cmpy    zstack_limit,u
+        blo     OVER            * If Y < zstack_limit, stack has overflowed
+        rts
 
 *-------------------------------------------------------------------------------
 * POPSTK: Pop word from Z-stack (Y) into TEMP and D

@@ -347,7 +347,7 @@ PRNTDC: lbsr     OBJLOC
         lbsr     SETWRD_MPC
         lbra     PZSTR
 ZRET:   ldy     OZSTAK,u        * restore stack pointer to call frame
-        lbsr     POPSTK          * Pop Caller's N
+        ldd     ,y++            * Pop Caller's N (fast)
         stb     CUR_NLOCS,u     * Restore it
         tstb
         beq     ZRET2
@@ -357,16 +357,16 @@ ZRET:   ldy     OZSTAK,u        * restore stack pointer to call frame
         aslb                    * D = 2*N
         leax    LOCALS,u
         leax    d,x             * X points to LOCALS + 2*N
-ZRET1:  lbsr     POPSTK
+ZRET1:  ldd     ,y++            * Pop local (fast)
         std     ,--x
         dec     VAL+1,u
         bne     ZRET1
 
-ZRET2:  lbsr     POPSTK
+ZRET2:  ldd     ,y++            * Pop ZPCH (fast)
         std     ZPCH,u
-        lbsr     POPSTK
+        ldd     ,y++            * Pop ZPCL (fast)
         stb     ZPCL,u
-        lbsr     POPSTK
+        ldd     ,y++            * Pop OZSTAK (fast)
         std     OZSTAK,u
         clr     ZPCFLG,u
         ldd     ARG1,u

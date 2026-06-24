@@ -136,6 +136,7 @@ AllocateBuffers:
 RESTART_GAME:
         * Reset Z-stack pointer (Y hardware register)
         leay    ZSTACK,u
+        sty     zstack_limit,u
         leay    1024,y          * Point to top of 512-word stack
         sty     zsp_top,u
         sty     OZSTAK,u
