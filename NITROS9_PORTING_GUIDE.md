@@ -34,8 +34,8 @@ The interpreter determines the screen rows and columns in the following order of
 
 **Validation Check:** If the resolved dimensions are smaller than 10 columns by 4 rows, the interpreter aborts immediately.
 
-### 2.2 VDG Reverse Video Support (Bypassed)
-When running on Level 1 systems with a 32x16 VDG screen, the status line requires reverse video support. The codebase contains logic to query this, but it is currently bypassed (directly branching to the Level 1 driver setup). If the check is re-enabled, the interpreter:
+### 2.2 VDG Reverse Video Support
+When running on Level 1 systems with a 32x16 VDG screen, the status line requires reverse video support. The interpreter:
 1.  Calls `F$Link` for the `TERM` device descriptor.
 2.  Checks the VDG type/options byte at offset `$26`.
 3.  If the value is not `$02` (which enables reverse video capabilities on VDG), the program prints an error and exits cleanly.

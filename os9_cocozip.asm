@@ -91,26 +91,32 @@ SetL1Drivers:
         stx     prtinv_vec,u
         leax    L1Scroll,pcr    
         stx     scroll_vec,u
-        bra     SafetyCheck
 
+        * Reinstate VDG reverse video check
+        pshs    u               * Save our data area pointer U
         lda     #Devic+Objct
         leax    term_name,pcr
         os9     F$Link
-        bcs     SafetyCheck     * If no TERM, just use defaults
+        bcs     term_link_err   * If no TERM, restore U and use defaults (skip check)
         
-        lda     $26,u           * Check reverse video byte
+        lda     $26,u           * Check VDG type/options byte at offset $26 of linked module
         pshs    a
-        os9     F$Unlink
-        puls    a               
+        os9     F$Unlink        * Unlink descriptor (U still has module entry point)
+        puls    a
+        puls    u               * Restore our data area pointer U
         cmpa    #2              * $02 = reverse video
-        beq     SafetyCheck
-
+        beq     SafetyCheck     * Yes: proceed
+        
         * Not reverse video: show error and exit
         leax    err_msg,pcr
         ldy     #err_len
         lda     #1
         os9     I$WritLn
         lbra    ExitCleanly
+
+term_link_err:
+        puls    u               * Restore our data area pointer U
+        bra     SafetyCheck
 
 SafetyCheck:
         * Safety Check: Ensure dimensions are reasonable
