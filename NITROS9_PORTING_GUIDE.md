@@ -15,7 +15,7 @@ Under NitrOS-9, the stack pointer `S` is initialized by the kernel to the top of
 3.  **Header Loading:** The interpreter expands memory to `zcode_offset + 256` bytes to load the first 256 bytes of the Z-code story header.
 4.  **Size Detection:** It extracts the boundary of the dynamic story segment (`ZENDLD` offset `4`) to calculate the size of the preload data (`ZPURE = ZENDLD + 1` pages).
 5.  **Target Paging Allocation:** The interpreter tries to allocate memory for the entire `ZPURE` preload plus 16 swapping pages relative to the stack boundary (total size `zcode_offset` + `(ZPURE + 16) * 256` bytes). If this fails, it falls back to a minimum memory requirement of `ZPURE + 8` swapping pages.
-6.  **Optimal Expansion:** Starting from the successfully allocated base, the interpreter runs an incremental loop, requesting 1 more page (256 bytes) via `F$Mem` in each iteration until it reaches a maximum of `ZPURE + 160` pages, or the allocation fails.
+6.  **Optimal Expansion:** Starting from the successfully allocated base, the interpreter runs an incremental loop, requesting 1 more page (256 bytes) via `F$Mem` in each iteration until it reaches a maximum of 160 total pages (or 160 swapping pages), or the allocation fails.
 7.  **Parameter Configuration:** The interpreter sets:
     -   `PAGE0,u` (the RAM page MSB of the swapping buffer start) immediately following the preload area.
     -   `PMAX,u` (the total number of swapping page slots) as `Total dynamic pages - ZPURE` (where total dynamic pages is computed by subtracting `zcode_offset` from the total allocated memory).
@@ -34,8 +34,8 @@ The interpreter determines the screen rows and columns in the following order of
 
 **Validation Check:** If the resolved dimensions are smaller than 10 columns by 4 rows, the interpreter aborts immediately.
 
-### 2.2 VDG Reverse Video Support
-When running on Level 1 systems with a 32x16 VDG screen, the status line requires reverse video support. The interpreter:
+### 2.2 VDG Reverse Video Support (Bypassed)
+When running on Level 1 systems with a 32x16 VDG screen, the status line requires reverse video support. The codebase contains logic to query this, but it is currently bypassed (directly branching to the Level 1 driver setup). If the check is re-enabled, the interpreter:
 1.  Calls `F$Link` for the `TERM` device descriptor.
 2.  Checks the VDG type/options byte at offset `$26`.
 3.  If the value is not `$02` (which enables reverse video capabilities on VDG), the program prints an error and exits cleanly.

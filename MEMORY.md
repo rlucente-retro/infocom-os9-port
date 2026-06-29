@@ -12,7 +12,7 @@ The workspace is organized as follows:
 
 | Offset Range / Symbol | Size (Bytes) | Description |
 |:---|:---|:---|
-| `U + $0000` - `U + ZPGTOP` | ~$140 | **Dynamic Direct Page Variables** (Access via `setdp 0`) |
+| `U + $0000` - `U + ZPGTOP` | 163 | **Dynamic Direct Page Variables** (Access via `setdp 0`) |
 | `U + ZSTACK` | 1024 | **Z-Stack** (512 words, dedicated Z-machine stack) |
 | `U + PTABLE` | 320 | **Paging Translation Table** (Holds virtual page numbers for cached blocks) |
 | `U + LRUMAP` | 160 | **Timestamp LRU Map** (Tracks buffer page usage for eviction) |
@@ -59,25 +59,25 @@ These variables are defined starting at offset `0` relative to the `U` register.
 | `$21` | `GLOBAL` | 2 | Base offset of Global Variable Table |
 | `$23` | `VOCAB` | 2 | Base offset of Vocabulary Table |
 | `$25` | `FWORDS` | 2 | Base offset of F-Words (Abbreviation) Table |
-| `$45` | `CUR_NLOCS`| 1 | Number of active locals in current routine |
-| `$46` | `OZSTAK` | 2 | Stack pointer snapshot (ZSP) saved for routine calls |
-| `$5A` | `VAL` | 2 | Value return registers |
-| `$5C` | `TEMP` | 2 | Primary temporary register |
-| `$5E` | `TEMP2` | 2 | Secondary temporary register |
-| `$61` | `global_ptr`| 2 | Absolute pointer to the global table in RAM |
-| `$63` | `vocab_ptr` | 2 | Absolute pointer to the vocab table in RAM |
-| `$65` | `TIMEFL` | 1 | Score layout select flag (0 = Score/Moves, non-zero = Time) |
-| `$79` | `zcode_ptr` | 2 | Base address of story file preload area (`U + zcode_offset`) |
-| `$7B` | `zcode_offset`| 2 | Dynamic offset of Z-code preload (aligned with stack boundary) |
-| `$7D` | `zsp_top` | 2 | Base address of Z-Stack top |
-| `$7F` | `cur_cols` | 1 | Total columns of terminal (e.g. 32, 40, 80) |
-| `$80` | `cur_rows` | 1 | Total rows of terminal (e.g. 16, 24, 30) |
-| `$81` | `cur_x` | 1 | Current terminal cursor column coordinate |
-| `$82` | `cur_y` | 1 | Current terminal cursor row coordinate |
-| `$83` | `inv_flag` | 1 | Invert output flag (0 = Normal text, 1 = Reverse video) |
-| `$84` | `page_lines`| 1 | Lines outputted since last screen pause |
-| `$85` | `was_cr` | 1 | CR state tracker to prevent double newlines |
-| `$A9` | `path_num` | 1 | NitrOS-9 file path number for the open story file |
+| `$27` | `CUR_NLOCS`| 1 | Number of active locals in current routine |
+| `$28` | `OZSTAK` | 2 | Stack pointer snapshot (ZSP) saved for routine calls |
+| `$3E` | `VAL` | 2 | Value return registers |
+| `$40` | `TEMP` | 2 | Primary temporary register |
+| `$42` | `TEMP2` | 2 | Secondary temporary register |
+| `$51` | `global_ptr`| 2 | Absolute pointer to the global table in RAM |
+| `$53` | `vocab_ptr` | 2 | Absolute pointer to the vocab table in RAM |
+| `$55` | `TIMEFL` | 1 | Score layout select flag (0 = Score/Moves, non-zero = Time) |
+| `$67` | `zcode_ptr` | 2 | Base address of story file preload area (`U + zcode_offset`) |
+| `$69` | `zcode_offset`| 2 | Dynamic offset of Z-code preload (aligned with stack boundary) |
+| `$6B` | `zsp_top` | 2 | Base address of Z-Stack top |
+| `$6F` | `cur_cols` | 1 | Total columns of terminal (e.g. 32, 40, 80) |
+| `$70` | `cur_rows` | 1 | Total rows of terminal (e.g. 16, 24, 30) |
+| `$71` | `cur_x` | 1 | Current terminal cursor column coordinate |
+| `$72` | `cur_y` | 1 | Current terminal cursor row coordinate |
+| `$73` | `inv_flag` | 1 | Invert output flag (0 = Normal text, 1 = Reverse video) |
+| `$74` | `page_lines`| 1 | Lines outputted since last screen pause |
+| `$75` | `was_cr` | 1 | CR state tracker to prevent double newlines |
+| `$99` | `path_num` | 1 | NitrOS-9 file path number for the open story file |
 
 ---
 
