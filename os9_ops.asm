@@ -88,35 +88,35 @@ vsum_no_inc:
 
 ZSAVE:  
         pshs    y               * Protect Z-stack pointer
-        sty     LOCALS+4,u      * Store current Z-stack pointer for saving
+        sty     BUFSAV+4,u      * Store current Z-stack pointer for saving
         
         leax    save_prompt,pcr
         ldy     #save_plen
         lbsr     GETFILENAME
-        bcs     sz_fail_pop
+        lbcs    sz_fail_pop     * Long branch to prevent byte overflow
         
         * I$Create
         leax    BUFSAV,u
         lda     #READ.+WRITE.   * Access mode
         ldb     #3              * Attributes (Read/Write)
         os9     I$Create
-        bcs     sz_fail_pop
+        lbcs    sz_fail_pop     * Long branch to prevent byte overflow
         sta     TEMP2,u         * Save file path
         
         * Write Header
         ldx     zcode_ptr,u
         ldd     ZID,x           * Game ID
-        std     LOCALS,u
+        std     BUFSAV,u
         ldd     OZSTAK,u
-        std     LOCALS+2,u
-        * LOCALS+4 already has Y
+        std     BUFSAV+2,u
+        * BUFSAV+4 already has Y
         lda     ZPCH,u
-        sta     LOCALS+6,u
+        sta     BUFSAV+6,u
         ldd     ZPCM,u
-        std     LOCALS+7,u
+        std     BUFSAV+7,u
         
         lda     TEMP2,u         * Path
-        leax    LOCALS,u        * Buffer
+        leax    BUFSAV,u        * Buffer
         ldy     #32             * Length
         os9     I$Write
         bcs     sz_fail_close
@@ -125,6 +125,13 @@ ZSAVE:
         lda     TEMP2,u
         leax    ZSTACK,u
         ldy     #510
+        os9     I$Write
+        bcs     sz_fail_close
+        
+        * Write Local Variables (32 bytes)
+        lda     TEMP2,u
+        leax    LOCALS,u
+        ldy     #32
         os9     I$Write
         bcs     sz_fail_close
         
@@ -156,17 +163,17 @@ ZREST:
         leax    rest_prompt,pcr
         ldy     #rest_plen
         lbsr     GETFILENAME
-        bcs     rz_fail_pop
+        lbcs    rz_fail_pop     * Long branch to prevent byte overflow
         
         * I$Open
         leax    BUFSAV,u
         lda     #READ.
         os9     I$Open
-        bcs     rz_fail_pop
+        lbcs    rz_fail_pop     * Long branch to prevent byte overflow
         sta     TEMP2,u         * Save file path
         
-        * Read Header (into LOCALS)
-        leax    LOCALS,u
+        * Read Header (into BUFSAV)
+        leax    BUFSAV,u
         ldy     #32
         os9     I$Read
         bcs     rz_fail_close
@@ -174,13 +181,20 @@ ZREST:
         * Verify Game ID
         ldx     zcode_ptr,u
         ldd     ZID,x
-        cmpd    LOCALS,u
+        cmpd    BUFSAV,u
         bne     rz_fail_close   * ID mismatch
         
         * Read Stack
         lda     TEMP2,u
         leax    ZSTACK,u
         ldy     #510
+        os9     I$Read
+        bcs     rz_fail_close
+        
+        * Read Local Variables (32 bytes)
+        lda     TEMP2,u
+        leax    LOCALS,u
+        ldy     #32
         os9     I$Read
         bcs     rz_fail_close
         
@@ -194,14 +208,14 @@ ZREST:
         bcs     rz_fail_close
         
         * Restore State
-        ldd     LOCALS+2,u
+        ldd     BUFSAV+2,u
         std     OZSTAK,u
-        ldy     LOCALS+4,u      * Restore Z-Stack pointer!
+        ldy     BUFSAV+4,u      * Restore Z-Stack pointer!
         sty     ,s              * Update saved Y on stack
         
-        lda     LOCALS+6,u
+        lda     BUFSAV+6,u
         sta     ZPCH,u
-        ldd     LOCALS+7,u
+        ldd     BUFSAV+7,u
         std     ZPCM,u
         clr     ZPCFLG,u        * Invalidate PC Cache
         
@@ -852,7 +866,6 @@ PTP:    lbsr    PROPNX          * NEXT ITEM
         bra     PUTP1
 
 PUTP2:  lbsr    PROPL
-        incb
         tsta
         beq     PUTP2A
         cmpa    #1
@@ -862,16 +875,12 @@ PUTP2:  lbsr    PROPL
         lda     #11
         lbra    ZERROR
 
-PTP1:   ldx     TEMP,u
-        abx
-        ldd     ARG3,u
-        std     ,x
+PTP1:   ldd     ARG3,u
+        std     1,x
         rts
 
 PUTP2A: lda     ARG3+1,u
-        ldx     TEMP,u
-        abx
-        sta     ,x
+        sta     1,x
         rts
 
 ZREAD:  lbsr     ZUSL            * Update status line first
