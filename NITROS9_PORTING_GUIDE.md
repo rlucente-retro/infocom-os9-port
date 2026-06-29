@@ -1,4 +1,4 @@
-# NitrOS-9 Z-Machine Interpreter (OS9ZIP) Porting and Implementation Reference
+# NitrOS-9 Z-Machine Interpreter (infocom) Porting and Implementation Reference
 
 This document serves as the technical reference for the completed port of the Infocom Z-machine interpreter (ZIP) to the NitrOS-9 operating system (Level 1 and Level 2).
 

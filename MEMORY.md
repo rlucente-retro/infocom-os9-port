@@ -1,4 +1,4 @@
-# OS9ZIP (NitrOS-9 Z-Machine Interpreter) Memory Map
+# infocom (NitrOS-9 Z-Machine Interpreter) Memory Map
 
 This document describes the memory organization and variable layout of the NitrOS-9 native Z-machine interpreter.
 

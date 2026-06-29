@@ -1,4 +1,4 @@
-# NitrOS-9 Z-Machine Interpreter (OS9ZIP)
+# NitrOS-9 Z-Machine Interpreter (infocom)
 
 This repository contains the NitrOS-9 (Level 1 and Level 2) native port of the Infocom Z-machine interpreter (ZIP). 
 
@@ -20,19 +20,19 @@ The interpreter runs as a standard user process under the NitrOS-9 operating sys
 
 The project is structured into modular assembly components included by the master file:
 
-*   `OS9_COCOZIP.ASM`: The master entry point and initialization file.
-*   `OS9_EQ.ASM`: Direct page equates and variable structures relative to the `U` register.
-*   `OS9_DISPATCH.ASM`: Dispatch tables for 0-OP, 1-OP, 2-OP, and Extended-OP instructions.
-*   `OS9_IO.ASM`: Console, keyboard input (with echo control), and utility functions.
-*   `OS9_DISK.ASM`: Target file seeking and page reading logic.
-*   `OS9_PAGING.ASM`: Memory page lookup, LRU tracking, and buffer eviction.
-*   `OS9_SUBS.ASM`: Core utility functions, sign extension, stack operations (push/pop), and PC branching.
-*   `OS9_OBJECTS.ASM`: Traversal and manipulation of the Z-machine object and property tables.
-*   `OS9_ZSTRING.ASM`: Decompression and decoding of compressed Z-strings and abbreviation tables.
-*   `OS9_READ.ASM`: Text parser, lexical analysis, and vocabulary matching.
-*   `OS9_SCREEN.ASM`: Layout control, reverse-video status bar updates, partial-screen line wrapping, and `[more]` paging.
-*   `OS9_MAIN.ASM`: Main Z-machine decoding and execution loop.
-*   `OS9_OPS.ASM`: Implementation of individual Z-machine opcodes, including math, logic, jumps, and Save/Restore.
+*   `os9_cocozip.asm`: The master entry point and initialization file.
+*   `os9_eq.asm`: Direct page equates and variable structures relative to the `U` register.
+*   `os9_dispatch.asm`: Dispatch tables for 0-OP, 1-OP, 2-OP, and Extended-OP instructions.
+*   `os9_io.asm`: Console, keyboard input (with echo control), and utility functions.
+*   `os9_disk.asm`: Target file seeking and page reading logic.
+*   `os9_paging.asm`: Memory page lookup, LRU tracking, and buffer eviction.
+*   `os9_subs.asm`: Core utility functions, sign extension, stack operations (push/pop), and PC branching.
+*   `os9_objects.asm`: Traversal and manipulation of the Z-machine object and property tables.
+*   `os9_zstring.asm`: Decompression and decoding of compressed Z-strings and abbreviation tables.
+*   `os9_read.asm`: Text parser, lexical analysis, and vocabulary matching.
+*   `os9_screen.asm`: Layout control, reverse-video status bar updates, partial-screen line wrapping, and `[more]` paging.
+*   `os9_main.asm`: Main Z-machine decoding and execution loop.
+*   `os9_ops.asm`: Implementation of individual Z-machine opcodes, including math, logic, jumps, and Save/Restore.
 
 ---
 
@@ -43,32 +43,29 @@ The project is structured into modular assembly components included by the maste
 2.  **NitrOS-9 Source / Defs**: Access to the NitrOS-9 kernel definitions (specifically `defsfile`) is required.
 
 ### Build Instructions
-Before building, ensure that the following variables are configured correctly in the `Makefile` to match your local development environment:
-*   `SHELF`: The path to the root of your local `coco-shelf` installation.
-*   `LWASM`: The path to the `lwasm` assembler executable (typically inside `$(SHELF)/bin`).
-*   `NITROS9`: The path to the root of your local `nitros9` repository (used to locate system definition files).
+Before building, ensure that the `NITROS9DIR` environment variable is set to the root of your local NitrOS-9 repository (used to locate system definition files and the base minimal disk image recipes). The assembler (`lwasm`) must be installed and available in your `PATH`.
 
-Once configured, run the default build target:
+Once configured, run the default build target to compile the interpreter and build the bootable disk image (`zork.dsk`) containing the `infocom` executable and `zork1.dat`:
 ```bash
 make
 ```
-This compiles the master source file `OS9_COCOZIP.ASM` using `lwasm` and outputs the executable binary `OS9ZIP`, along with its map `OS9ZIP.map` and listing `OS9ZIP.list`.
+This compiles the master source file `os9_cocozip.asm` using `lwasm` and outputs the executable binary `infocom` inside the command directory of the generated `zork.dsk` image.
 
-To generate a bootable NitrOS-9 disk image (`os9test.dsk`) containing `OS9ZIP` and `ZORK1.DAT`:
+To run the generated disk image in the MAME emulator:
 ```bash
-make disk
+make run
 ```
 
 ### Running the Interpreter
-Under the NitrOS-9 shell, execute `OS9ZIP` by specifying the story file path and optionally overriding the screen resolution:
+Under the NitrOS-9 shell, execute `infocom` by specifying the story file path (e.g. `zork1.dat`) and optionally overriding the screen resolution:
 ```bash
-OS9ZIP ZORK1.DAT [columns]x[rows]
+infocom zork1.dat [columns]x[rows]
 ```
 Example (80x24 console):
 ```bash
-OS9ZIP ZORK1.DAT 80x24
+infocom zork1.dat 80x24
 ```
 Example (standard 32-column screen):
 ```bash
-OS9ZIP ZORK1.DAT 32x16
+infocom zork1.dat 32x16
 ```
