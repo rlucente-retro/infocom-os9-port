@@ -635,17 +635,20 @@ gfn_done_ok:
         lda     #$0D
         lbsr    MYCHR
         
+        pshs    b               * Save the filename length
         * Restore terminal echo
         lda     #0
         ldb     #SS.Opt
         leax    dev_opts,u
         os9     I$GetStt
-        bcs     gfn_check_empty
+        bcs     gfn_restore_pop
         lda     #1
         sta     PD.EKO-PD.OPT,x
         lda     #0
-        ldb     #SS.Opt
+        ldb     #SS.Opt         
         os9     I$SetStt
+gfn_restore_pop:
+        puls    b               * Restore the filename length
         
 gfn_check_empty:
         tstb                    * Check if empty
