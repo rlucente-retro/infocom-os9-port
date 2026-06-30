@@ -40,7 +40,7 @@ cat_none:
 *-------------------------------------------------------------------------------
 MYCHR:
         tst     inv_flag,u
-        bne     mychr_direct_dispatch
+        bne     mychr_inv_dispatch
         tst     in_input_mode,u
         bne     mychr_direct_dispatch
 
@@ -70,6 +70,9 @@ mychr_append:
 mychr_delim:
         lbsr    FLUSH_WORD      * Flush current word
         * Fall through to print delimiter directly
+
+mychr_inv_dispatch:
+        lbra    MYCHR_INV
 
 mychr_direct_dispatch:
         lbra    mychr_direct
