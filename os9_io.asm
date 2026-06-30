@@ -40,9 +40,41 @@ cat_none:
 *-------------------------------------------------------------------------------
 MYCHR:
         tst     inv_flag,u
-        beq     mychr_norm
-        lbra     MYCHR_INV
-mychr_norm:
+        bne     mychr_direct_dispatch
+        tst     in_input_mode,u
+        bne     mychr_direct_dispatch
+
+        * Word buffering logic
+        cmpa    #$20            * Space
+        beq     mychr_delim
+        cmpa    #$09            * Tab
+        beq     mychr_delim
+        cmpa    #$0D            * CR
+        beq     mychr_delim
+        cmpa    #$0A            * LF
+        beq     mychr_delim
+
+        * Normal character: append to buffer
+        pshs    b,x
+        ldb     word_len,u
+        cmpb    #63             * Buffer full?
+        blo     mychr_append
+        lbsr    FLUSH_WORD      * Flush first
+        ldb     word_len,u      * Reload length (which is 0)
+mychr_append:
+        leax    word_buf,u
+        sta     b,x             * Append character
+        inc     word_len,u
+        puls    b,x,pc          * Done, return
+
+mychr_delim:
+        lbsr    FLUSH_WORD      * Flush current word
+        * Fall through to print delimiter directly
+
+mychr_direct_dispatch:
+        lbra    mychr_direct
+
+mychr_direct:
         pshs    a,b,x,y
         sta     IOCHAR,u        * Save char in DP variable
         
@@ -155,6 +187,48 @@ chr_bs_done:
         puls    a,b,x,y,pc
 
 chr_done:
+        puls    a,b,x,y,pc
+
+*-------------------------------------------------------------------------------
+* FLUSH_WORD: Output the buffered word, checking if it fits or needs wrapping
+* Entry: None
+* Exit: None
+*-------------------------------------------------------------------------------
+FLUSH_WORD:
+        pshs    a,b,x,y
+        ldb     word_len,u
+        beq     fw_exit         * Empty buffer, done
+        
+        lda     cur_x,u
+        adda    word_len,u      * A = cur_x + word_len
+        bcs     fw_wrap         * Overflow: wrap
+        cmpa    cur_cols,u
+        bls     fw_print        * Fits!
+fw_wrap:
+        lda     word_len,u
+        cmpa    cur_cols,u
+        bhi     fw_print        * If word is longer than line, don't wrap (it wouldn't fit anyway)
+        
+        * Wrap: emit CR
+        lda     #$0D
+        lbsr    mychr_direct
+        
+fw_print:
+        * Iterate and print buffered characters
+        clrb                    * B = loop index
+fw_lp:  cmpb    word_len,u
+        bhs     fw_done
+        leax    word_buf,u
+        lda     b,x
+        pshs    b
+        lbsr    mychr_direct
+        puls    b
+        incb
+        bra     fw_lp
+        
+fw_done:
+        clr     word_len,u      * Reset length
+fw_exit:
         puls    a,b,x,y,pc
 
 *-------------------------------------------------------------------------------
@@ -432,6 +506,9 @@ l2_done:
 *-------------------------------------------------------------------------------
 INPUT:
         pshs    y               * Save Z-stack pointer
+        lbsr    FLUSH_WORD      * Flush any pending printed characters
+        lda     #1
+        sta     in_input_mode,u * Enable input mode
         * 1. Turn off terminal echo for stdin (Path 0)
         lda     #0
         ldb     #SS.Opt
@@ -542,6 +619,7 @@ inp_done:
         os9     I$SetStt
 
 inp_exit:
+        clr     in_input_mode,u * Disable input mode
         lda     MTEMP+1,u       * Return length in A
         puls    y,pc            * Restore Z-stack pointer
 
@@ -552,6 +630,7 @@ inp_exit:
 *       Carry set = Error or empty input
 *-------------------------------------------------------------------------------
 GETFILENAME:
+        lbsr    FLUSH_WORD      * Flush any pending characters
         pshs    a,b,x,y
         * 1. Print Prompt character-by-character
 gfn_pr_lp:
@@ -562,6 +641,9 @@ gfn_pr_lp:
         leay    -1,y
         bra     gfn_pr_lp
 gfn_pr_done:
+        lbsr    FLUSH_WORD      * Flush prompt text to screen
+        lda     #1
+        sta     in_input_mode,u * Enable input mode
 
         * 2. Turn off terminal echo for stdin (Path 0)
         lda     #0
@@ -654,6 +736,7 @@ gfn_check_empty:
         tstb                    * Check if empty
         beq     gfn_done_err
         
+        clr     in_input_mode,u * Disable input mode
         andcc   #$FE            * Clear carry
         puls    a,b,x,y,pc
         
@@ -670,6 +753,7 @@ gfn_done_err:
         ldb     #SS.Opt
         os9     I$SetStt
 gfn_err_exit:
+        clr     in_input_mode,u * Disable input mode
         orcc    #$01            * Set carry
         puls    a,b,x,y,pc
 

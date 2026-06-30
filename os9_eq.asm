@@ -137,6 +137,8 @@ buffer_size     rmb     2       * total size of buffer in bytes
 prtinv_vec      rmb     2       * vector to subroutine to print inverse characters
 scroll_vec      rmb     2       * vector to subroutine to scroll content area
 ver_flag        rmb     1       * Flag to force disk reads during game verification
+in_input_mode   rmb     1       * Flag: 1 if we are inside keyboard input/prompt echo
+word_len        rmb     1       * Length of the current word in word_buf
 
 ZPGTOP          equ     .       * End of Direct Page variables
 
@@ -148,6 +150,7 @@ LOCALS          rmb     32      * LOCAL VARIABLE STORAGE (32 BYTES)
 BUFFER          rmb     32      * I/O LINE BUFFER (32 BYTES)
 BUFSAV          rmb     32      * I/O AUX BUFFER (32 BYTES)
 status_buf      rmb     80      * STATUS LINE BUFFER (80 BYTES)
+word_buf        rmb     64      * Buffer for holding current word (64 bytes)
 TotalDataSize   equ     .
 
 * STATIC_SIZE calculation:
