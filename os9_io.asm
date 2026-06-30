@@ -69,7 +69,7 @@ mychr_append:
 
 mychr_delim:
         lbsr    FLUSH_WORD      * Flush current word
-        * Fall through to print delimiter directly
+        bra     mychr_direct    * Print delimiter directly
 
 mychr_inv_dispatch:
         lbra    MYCHR_INV
