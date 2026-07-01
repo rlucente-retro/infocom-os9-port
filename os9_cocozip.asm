@@ -227,10 +227,27 @@ GrowMemLoop:
         
 MemGrowthFail:
         dec     TEMP2+1,u       * Revert to last successful count
+        
+        * Leave 8 pages (2KB) of headroom for OS-9 system buffers
         ldb     TEMP2+1,u
+        subb    #8
+        lda     ZPURE,u
+        adda    #8
+        pshs    a
+        cmpb    ,s+
+        bhs     headroom_ok
+        ldb     ZPURE,u
+        addb    #8
+headroom_ok:
+        stb     TEMP2+1,u
+        
+        * Shrink the memory allocation to the safe size
         tfr     b,a
         clrb
-        addd    zcode_offset,u  * D = total size in bytes (last successful size)
+        addd    zcode_offset,u  * D = safe size in bytes
+        pshs    y
+        os9     F$Mem           * Resize process memory
+        puls    y
 
 MemGrowthDone:
 
