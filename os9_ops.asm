@@ -996,7 +996,7 @@ VERNUM: pshs    a,x,y
         os9     I$WritLn
         puls    a,x,y,pc
 
-vcode_msg fcc     /OS9ZIP VERSION A/
+vcode_msg fcc     /infocom VERSION A/
           fcb     $0d
 vcode_len equ     *-vcode_msg
 

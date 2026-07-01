@@ -9,7 +9,7 @@
 *-------------------------------------------------------------------------------
         mod     eom,name,tylg,atrv,MainEntryPoint,STATIC_SIZE  
 
-name    fcs     /OS9ZIP/
+name    fcs     /infocom/
 
 *-------------------------------------------------------------------------------
 * Main Entry Point
