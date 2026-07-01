@@ -150,7 +150,8 @@ sz_w_lp:
         lda     TEMP2,u
         ldy     #256
         os9     I$Write
-        bcs     sz_w_err
+        lbcs    sz_w_err
+        leax    256,x           * Advance buffer pointer to next page
         dec     ,s              * Decrement page count
         bra     sz_w_lp
 sz_w_err:
@@ -223,7 +224,8 @@ rz_r_lp:
         lda     TEMP2,u
         ldy     #256
         os9     I$Read
-        bcs     rz_r_err
+        lbcs    rz_r_err
+        leax    256,x           * Advance buffer pointer to next page
         dec     ,s              * Decrement page count
         bra     rz_r_lp
 rz_r_err:
