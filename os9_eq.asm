@@ -139,6 +139,7 @@ scroll_vec      rmb     2       * vector to subroutine to scroll content area
 ver_flag        rmb     1       * Flag to force disk reads during game verification
 in_input_mode   rmb     1       * Flag: 1 if we are inside keyboard input/prompt echo
 word_len        rmb     1       * Length of the current word in word_buf
+max_swap_pages  rmb     1       * Maximum swapping pages allowed (Level 1 vs Level 2)
 
 ZPGTOP          equ     .       * End of Direct Page variables
 

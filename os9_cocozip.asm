@@ -127,6 +127,17 @@ SafetyCheck:
         cmpa    #10
         lblo    ExitProgram
 
+        * Set dynamic max_swap_pages limit (Level 1 vs Level 2)
+        lda     cur_cols,u
+        cmpa    #32
+        beq     set_l1_swap_limit
+        lda     #160            * Level 2 cap (160 swapping pages)
+        sta     max_swap_pages,u
+        bra     AllocateBuffers
+set_l1_swap_limit:
+        lda     #24             * Level 1 cap (24 swapping pages = 6KB, leaving headroom)
+        sta     max_swap_pages,u
+
 AllocateBuffers:
         * Request space for static variables + 1 header page
         ldd     zcode_offset,u
@@ -211,7 +222,7 @@ GrowMemLoop:
         bhs     MemGrowthDone
         ldb     TEMP2+1,u
         subb    ZPURE,u
-        cmpb    #160            * Maximum 160 swapping pages?
+        cmpb    max_swap_pages,u * Maximum swapping pages limit?
         bhs     MemGrowthDone
         
         inc     TEMP2+1,u       * Request 1 more page
@@ -227,27 +238,10 @@ GrowMemLoop:
         
 MemGrowthFail:
         dec     TEMP2+1,u       * Revert to last successful count
-        
-        * Leave 8 pages (2KB) of headroom for OS-9 system buffers
         ldb     TEMP2+1,u
-        subb    #8
-        lda     ZPURE,u
-        adda    #8
-        pshs    a
-        cmpb    ,s+
-        bhs     headroom_ok
-        ldb     ZPURE,u
-        addb    #8
-headroom_ok:
-        stb     TEMP2+1,u
-        
-        * Shrink the memory allocation to the safe size
         tfr     b,a
         clrb
-        addd    zcode_offset,u  * D = safe size in bytes
-        pshs    y
-        os9     F$Mem           * Resize process memory
-        puls    y
+        addd    zcode_offset,u  * D = total size in bytes (last successful size)
 
 MemGrowthDone:
 
@@ -269,9 +263,9 @@ MemGrowthDone:
         subd    zcode_offset,u  * D = Total dynamic size in bytes
         tfr     a,b             * B = Total dynamic pages
         subb    ZPURE,u         * B = Total swapping pages
-        cmpb    #160            * Cap at max table size
+        cmpb    max_swap_pages,u * Cap at max table/dynamic size
         blo     pmax_ok
-        ldb     #160
+        ldb     max_swap_pages,u
 pmax_ok:
         stb     PMAX,u
         stb     MASK+1,u        * Total dynamic pages for paging loop
