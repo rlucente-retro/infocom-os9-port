@@ -135,14 +135,24 @@ ZSAVE:
         os9     I$Write
         bcs     sz_fail_close
         
-        * Write Preload
-        lda     ZPURE,u
-        clrb                    * D = ZPURE * 256
-        tfr     d,y
-        lda     TEMP2,u
+        * Write Preload in 256-byte (1-page) chunks
         ldx     zcode_ptr,u
+        ldb     ZPURE,u
+        pshs    b               * Store page count on stack
+sz_w_lp:
+        ldb     ,s              * Get remaining pages
+        beq     sz_w_done       * Exit if 0
+        lda     TEMP2,u
+        ldy     #256
         os9     I$Write
-        bcs     sz_fail_close
+        bcs     sz_w_err
+        dec     ,s              * Decrement page count
+        bra     sz_w_lp
+sz_w_err:
+        leas    1,s             * Clean stack
+        bra     sz_fail_close
+sz_w_done:
+        leas    1,s             * Clean stack
         
         * Close and Succeed
         lda     TEMP2,u
@@ -198,14 +208,24 @@ ZREST:
         os9     I$Read
         bcs     rz_fail_close
         
-        * Read Preload
-        lda     ZPURE,u         * Number of pages to read
-        clrb                    * D = ZPURE * 256
-        tfr     d,y
-        lda     TEMP2,u
+        * Read Preload in 256-byte (1-page) chunks
         ldx     zcode_ptr,u
+        ldb     ZPURE,u
+        pshs    b               * Store page count on stack
+rz_r_lp:
+        ldb     ,s              * Get remaining pages
+        beq     rz_r_done       * Exit if 0
+        lda     TEMP2,u
+        ldy     #256
         os9     I$Read
-        bcs     rz_fail_close
+        bcs     rz_r_err
+        dec     ,s              * Decrement page count
+        bra     rz_r_lp
+rz_r_err:
+        leas    1,s             * Clean stack
+        bra     rz_fail_close
+rz_r_done:
+        leas    1,s             * Clean stack
         
         * Restore State
         ldd     BUFSAV+2,u
