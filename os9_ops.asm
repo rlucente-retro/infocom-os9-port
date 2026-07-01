@@ -88,7 +88,10 @@ vsum_no_inc:
 
 ZSAVE:  
         pshs    y               * Protect Z-stack pointer
-        sty     BUFSAV+4,u      * Store current Z-stack pointer for saving
+        tfr     y,d
+        pshs    u
+        subd    ,s++            * Relocate stack pointer relative to U
+        std     BUFSAV+4,u      * Store relative Z-stack pointer for saving
         
         leax    save_prompt,pcr
         ldy     #save_plen
@@ -108,8 +111,10 @@ ZSAVE:
         ldd     ZID,x           * Game ID
         std     BUFSAV,u
         ldd     OZSTAK,u
+        pshs    u
+        subd    ,s++            * Relocate OZSTAK relative to U
         std     BUFSAV+2,u
-        * BUFSAV+4 already has Y
+        * BUFSAV+4 already has relative Y
         lda     ZPCH,u
         sta     BUFSAV+6,u
         ldd     ZPCM,u
@@ -119,21 +124,21 @@ ZSAVE:
         leax    BUFSAV,u        * Buffer
         ldy     #32             * Length
         os9     I$Write
-        bcs     sz_fail_close
+        lbcs    sz_fail_close
         
         * Write Stack
         lda     TEMP2,u
-        leax    ZSTACK,u
+        leax    ZSTACK+514,u
         ldy     #510
         os9     I$Write
-        bcs     sz_fail_close
+        lbcs    sz_fail_close
         
         * Write Local Variables (32 bytes)
         lda     TEMP2,u
         leax    LOCALS,u
         ldy     #32
         os9     I$Write
-        bcs     sz_fail_close
+        lbcs    sz_fail_close
         
         * Write Preload in 256-byte (1-page) chunks
         ldx     zcode_ptr,u
@@ -186,27 +191,27 @@ ZREST:
         leax    BUFSAV,u
         ldy     #32
         os9     I$Read
-        bcs     rz_fail_close
+        lbcs    rz_fail_close
         
         * Verify Game ID
         ldx     zcode_ptr,u
         ldd     ZID,x
         cmpd    BUFSAV,u
-        bne     rz_fail_close   * ID mismatch
+        lbne    rz_fail_close   * ID mismatch
         
         * Read Stack
         lda     TEMP2,u
-        leax    ZSTACK,u
+        leax    ZSTACK+514,u
         ldy     #510
         os9     I$Read
-        bcs     rz_fail_close
+        lbcs    rz_fail_close
         
         * Read Local Variables (32 bytes)
         lda     TEMP2,u
         leax    LOCALS,u
         ldy     #32
         os9     I$Read
-        bcs     rz_fail_close
+        lbcs    rz_fail_close
         
         * Read Preload in 256-byte (1-page) chunks
         ldx     zcode_ptr,u
@@ -228,9 +233,15 @@ rz_r_done:
         leas    1,s             * Clean stack
         
         * Restore State
-        ldd     BUFSAV+2,u
+        ldd     BUFSAV+2,u      * Relative OZSTAK
+        pshs    u
+        addd    ,s++            * Absolute OZSTAK
         std     OZSTAK,u
-        ldy     BUFSAV+4,u      * Restore Z-Stack pointer!
+        
+        ldd     BUFSAV+4,u      * Relative Y
+        pshs    u
+        addd    ,s++            * Absolute Y
+        tfr     d,y
         sty     ,s              * Update saved Y on stack
         
         lda     BUFSAV+6,u
