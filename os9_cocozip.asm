@@ -466,7 +466,6 @@ gm_err:
 *-------------------------------------------------------------------------------
 ExitProgram:
         lbsr    PrintOS9Error   * Show why we are exiting
-        puls    x               * Restore parameter pointer
 ExitCleanly:
         clrb                    * Exit status 0
         os9     F$Exit
