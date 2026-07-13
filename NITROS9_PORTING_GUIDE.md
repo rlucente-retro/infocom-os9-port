@@ -27,10 +27,9 @@ Under NitrOS-9, the stack pointer `S` is initialized by the kernel to the top of
 To accommodate different terminal drivers and screens (VDG 32x16, 40-column, 80-column), the display sub-system is dynamically configured at runtime.
 
 ### 2.1 Screen Dimension Resolution
-The interpreter determines the screen rows and columns in the following order of priority:
-1.  **Command-Line Parameter:** Parses the parameter area pointed to by `X` at entry for resolution strings (e.g. `80x24`, `32x16`).
-2.  **OS-9 System Query:** If no override is provided, it performs an `I$GetStt` status call with `SS.ScSiz` (`$26`) on stdout (Path 1).
-3.  **Default Fallback:** Defaults to a standard 32x16 terminal.
+The interpreter determines the screen rows and columns at startup:
+1.  **OS-9 System Query:** Queries the terminal driver on stdout (Path 1) using an `I$GetStt` status call with `SS.ScSiz` (`$26`).
+2.  **Default Fallback:** If the system query fails, the interpreter falls back to a standard 32x16 terminal (initially defaulting to 80x24 before the query).
 
 **Validation Check:** If the resolved dimensions are smaller than 10 columns by 4 rows, the interpreter aborts immediately.
 

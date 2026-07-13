@@ -11,7 +11,7 @@ The interpreter runs as a standard user process under the NitrOS-9 operating sys
 *   **OS-9 Native Process model:** Position-independent, reentrant architecture using the `U` register to address the dynamic process data area.
 *   **Dynamic LRU Memory Paging:** At startup, the interpreter queries the kernel for memory via `F$Mem`. It dynamically scales its swapping space from a minimum of 8 pages (2KB) up to 160 pages (40KB), caching story file pages using a Least Recently Used (LRU) eviction policy.
 *   **File-System Integration:** Story file blocks are paged dynamically from disk using standard OS-9 filesystem requests (`I$Seek` / `I$Read`).
-*   **Adaptive Terminal Formatting:** Detects terminal dimensions at runtime via the `SS.ScSiz` status query or parses command-line parameters (e.g. `80x24`, `32x16`). It dynamically wraps text, displays a reverse-video status bar on Row 0, and handles `[more]` paging automatically.
+*   **Adaptive Terminal Formatting:** Detects terminal dimensions at runtime via the `SS.ScSiz` status query. It dynamically wraps text, displays a reverse-video status bar on Row 0, and handles `[more]` paging automatically.
 *   **File-Based Save/Restore:** Replaces track/sector-based saves with standard named save files in the OS-9 filesystem.
 
 ---
@@ -57,15 +57,7 @@ make run
 ```
 
 ### Running the Interpreter
-Under the NitrOS-9 shell, execute `infocom` by specifying the story file path (e.g. `zork1.dat`) and optionally overriding the screen resolution:
+Under the NitrOS-9 shell, execute `infocom` by specifying the story file path (e.g. `zork1.dat`):
 ```bash
-infocom zork1.dat [columns]x[rows]
-```
-Example (80x24 console):
-```bash
-infocom zork1.dat 80x24
-```
-Example (standard 32-column screen):
-```bash
-infocom zork1.dat 32x16
+infocom zork1.dat
 ```
