@@ -30,6 +30,10 @@ clr_lp: clr     ,u+
         * 3. Restore data pointer
         puls    u
 
+        * Initialize STAMP to 1
+        lda     #1
+        sta     STAMP,u
+
         * Query initial memory size to find the stack boundary
         ldd     #0
         os9     F$Mem

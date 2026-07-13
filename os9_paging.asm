@@ -150,6 +150,7 @@ PG1:    ldb     ZPAGE,u
         bne     PG4
 
 * Handle stamp overflow
+        pshs    y               * Save Z-stack pointer Y
         bsr     EARLY
         leax    LRUMAP,u
         clrb
@@ -165,7 +166,11 @@ PG3:    incb
 
         lda     #0
         suba    LRU,u
+        bne     stamp_ok
+        inca                    * If 0, make it 1
+stamp_ok:
         sta     STAMP,u
+        puls    y               * Restore Z-stack pointer Y
 
 * Stamp the page
 PG4:    ldb     ZPAGE,u

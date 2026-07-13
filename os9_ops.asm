@@ -1004,6 +1004,9 @@ ZERROR: pshs    a,y
         pshs    a,y
         sta     TEMP+1,u
         clr     TEMP,u
+        lbsr    FLUSH_WORD      * Flush any pending buffered text
+        lda     #1
+        sta     in_input_mode,u * Force direct output to screen for error code
         lbsr     NUMBER          * Print the error code
         
         lda     #1
