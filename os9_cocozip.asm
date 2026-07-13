@@ -17,19 +17,18 @@ name    fcs     /infocom/
 MainEntryPoint:
         setdp   0               
 
-        * 1. Save parameter pointer
-        pshs    x
+        * 1. Save data pointer
+        pshs    u
 
         * 2. Initialize Direct Page variables to zero
         * Avoid clearing buffers and stack area.
-        tfr     u,x
         ldd     #TotalDataSize
-clr_lp: clr     ,x+
+clr_lp: clr     ,u+
         subd    #1
         bne     clr_lp
 
-        * 3. Restore parameter pointer
-        puls    x
+        * 3. Restore data pointer
+        puls    u
 
         * Query initial memory size to find the stack boundary
         ldd     #0
@@ -54,12 +53,8 @@ clr_lp: clr     ,x+
         lda     #1
         sta     cur_y,u         * Start at Row 1 (below status line)
         
-        * 6. Determine screen resolution (X now points to remaining arguments)
-        lbsr    ParseOptRes     * Try to get resolution from arguments
-        bcc     GotResolution   * If carry clear, resolution was parsed
-
-        * No resolution on command line: Query the terminal driver
-        lda     #1              * Path 1 (stdout)
+        * 6. Determine screen resolution - Query the terminal driver
+*        lda     #1              * Path 1 (stdout) (A is already 1 on previous load)
         ldb     #SS.ScSiz       * Service request: Get Screen Size
         os9     I$GetStt
         bcs     SetFallbacks    * If query fails, use defaults already set
@@ -331,105 +326,6 @@ init_pt: std    ,x++
         lbra    MLOOP
 
 *-------------------------------------------------------------------------------
-* ParseOptRes: Parse command line for resolution strings (e.g., "80x30")
-*-------------------------------------------------------------------------------
-ParseOptRes:
-        lda     ,x+             
-        cmpa    #$0D            
-        beq     gsp_fail        
-        cmpa    #$20            
-        beq     ParseOptRes     
-        leax    -1,x            
-        tfr     x,y             
-gsp_lp: lda     ,x+
-        cmpa    #$0D            
-        beq     gsp_fail        * Not a resolution string (no 'x')
-        cmpa    #$20            
-        beq     gsp_fail        * Not a resolution string (no 'x')
-        cmpa    #'x'            
-        bne     gsp_lp
-        
-        * Found an 'x', parse digits before it
-        pshs    x               
-        leax    -1,x            
-        lda     #0
-        sta     ,x              * Terminate first string
-        tfr     y,x             
-        lbsr    DecToBin        
-        stb     cur_cols,u
-        puls    x               
-        
-        * Now parse digits after 'x'
-        tfr     x,y             
-gsp_lp2: lda     ,x+
-        cmpa    #$0D
-        beq     gsp_ok2
-        cmpa    #$20
-        beq     gsp_ok2
-        bra     gsp_lp2
-gsp_ok2:
-        leax    -1,x
-        lda     #0
-        sta     ,x
-        tfr     y,x
-        lbsr    DecToBin
-        stb     cur_rows,u
-        andcc   #%11111110      
-        rts
-
-gsp_fail:
-        orcc    #$01            
-        rts
-
-*-------------------------------------------------------------------------------
-* DecToBin: Convert null-terminated decimal string in X to byte in B
-*-------------------------------------------------------------------------------
-DecToBin:
-        clrb                    
-dtb_lp: lda     ,x+
-        tsta
-        beq     dtb_done
-        suba    #'0'
-        blo     dtb_done
-        cmpa    #9
-        bhi     dtb_done
-        pshs    a
-        lda     #10
-        mul                     
-        addb    ,s+
-        bra     dtb_lp
-dtb_done:
-        rts
-
-*-------------------------------------------------------------------------------
-* PrintOS9Error: Print "OS-9 Error #" and the code in B
-*-------------------------------------------------------------------------------
-PrintOS9Error:
-        pshs    a,b,x,y
-        tfr     b,a
-        clrb
-        exg     a,b
-        std     TEMP,u          * Save error code
-        leax    err_os9,pcr
-        ldy     #err_os9_len
-        lda     #1
-        os9     I$Write
-        lbsr    NUMBER          * Print error code in TEMP
-        lda     #$0D
-        lbsr    WriteStdoutChar
-        puls    a,b,x,y,pc
-
-err_os9 fcc /OS-9 Error #/
-err_os9_len equ *-err_os9
-
-*-------------------------------------------------------------------------------
-* SignalHandler: Standard OS-9 Ctrl-C intercept
-*-------------------------------------------------------------------------------
-SignalHandler:
-        clrb                    * Exit status 0
-        os9     F$Exit
-
-*-------------------------------------------------------------------------------
 * GrowMemory: Expand memory to D bytes if D is larger than current size.
 * Input: D = desired size in bytes
 * Exit: D = current size in bytes, Carry clear on success, Carry set on error.
@@ -453,21 +349,18 @@ GrowMemory:
 gm_same:
         ldd     TEMP,u          * Return current size in D
         std     ,s
+        andcc   #$FE            * CMPD may set carry when desired < current
 gm_exit:
-        andcc   #$FE            * Clear carry flag (success)
-        puls    d,y,pc
 gm_err:
-        puls    d,y
-        orcc    #$01            * Set carry
-        rts
+        puls    d,y,pc
 
 *-------------------------------------------------------------------------------
-* Exit Logic
+* Exit Logic and SignalHandler: Standard OS-9 Ctrl-C intercept
 *-------------------------------------------------------------------------------
-ExitProgram:
-        lbsr    PrintOS9Error   * Show why we are exiting
+SignalHandler:
 ExitCleanly:
         clrb                    * Exit status 0
+ExitProgram:
         os9     F$Exit
 
 term_name fcs   /TERM/
