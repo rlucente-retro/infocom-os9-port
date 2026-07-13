@@ -200,7 +200,7 @@ chr_done:
 FLUSH_WORD:
         pshs    a,b,x,y
         ldb     word_len,u
-        beq     fw_exit         * Empty buffer, done
+        lbeq    fw_exit         * Empty buffer, done
         
         lda     cur_x,u
         adda    word_len,u      * A = cur_x + word_len
@@ -210,14 +210,50 @@ FLUSH_WORD:
 fw_wrap:
         lda     word_len,u
         cmpa    cur_cols,u
-        bhi     fw_print        * If word is longer than line, don't wrap (it wouldn't fit anyway)
+        bhi     fw_slow         * Oversized words need per-character wrapping
         
         * Wrap: emit CR
         lda     #$0D
         lbsr    mychr_direct
         
 fw_print:
-        * Iterate and print buffered characters
+        * Convert the complete word once when using the Level 1 display path.
+        ldx     scroll_vec,u
+        leay    L1Scroll,pcr
+        pshs    y
+        cmpx    ,s++
+        bne     fw_write
+
+        leax    word_buf,u
+        ldb     word_len,u
+fw_l1_convert:
+        lda     ,x
+        cmpa    #'a'
+        blo     fw_l1_next
+        cmpa    #'z'
+        bhi     fw_l1_next
+        suba    #$20
+        sta     ,x
+fw_l1_next:
+        leax    1,x
+        decb
+        bne     fw_l1_convert
+
+fw_write:
+        leax    word_buf,u
+        clra
+        ldb     word_len,u
+        tfr     d,y
+        lda     #1              * Path 1 (stdout)
+        os9     I$Write          * Write the buffered word in one kernel call
+        lda     cur_x,u
+        adda    word_len,u
+        sta     cur_x,u
+        clr     was_cr,u
+        bra     fw_done
+
+fw_slow:
+        * Oversized words can cross line boundaries; retain full character logic.
         clrb                    * B = loop index
 fw_lp:  cmpb    word_len,u
         bhs     fw_done
@@ -777,4 +813,3 @@ MYCHR_INV:
         jsr     [prtinv_vec,u]
         puls    x,y
         puls    a,pc
-
