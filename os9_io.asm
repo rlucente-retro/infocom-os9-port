@@ -562,9 +562,9 @@ inp_loop_start:
         leax    d,x             * X = pointer to text buffer
         ldb     ,x+             * B = Max buffer size (byte 0)
         * We are now pointing at byte 1 (where input starts)
-        * Store current length in MTEMP+1 (0) and max in MTEMP
-        stb     MTEMP,u
-        clr     MTEMP+1,u
+        * Store current length in input_len (0) and max in input_max
+        stb     input_max,u
+        clr     input_len,u
         stx     TEMP2,u         * Save buffer pointer
 
 inp_loop:
@@ -596,8 +596,8 @@ inp_read_ok:
         beq     inp_lf
         
         * Regular Character
-        ldb     MTEMP+1,u       * Check length
-        cmpb    MTEMP,u         * At max?
+        ldb     input_len,u     * Check length
+        cmpb    input_max,u     * At max?
         bhs     inp_loop        * Yes, ignore new characters
         
         * Convert to lowercase
@@ -609,14 +609,14 @@ inp_read_ok:
 inp_store:
         ldx     TEMP2,u         * Get buffer pointer
         sta     b,x             * Store in buffer
-        inc     MTEMP+1,u       * Increment length
+        inc     input_len,u     * Increment length
         lbsr    MYCHR           * Echo character manually
         lbra    inp_loop
 
 inp_bs:
-        tst     MTEMP+1,u       * Is buffer empty?
+        tst     input_len,u     * Is buffer empty?
         lbeq    inp_loop        * Yes, ignore backspace
-        dec     MTEMP+1,u       * Decrement length
+        dec     input_len,u     * Decrement length
         * Visual Backspace: Backspace, Space, Backspace
         lda     #$08
         lbsr    MYCHR
@@ -627,14 +627,14 @@ inp_bs:
         lbra    inp_loop
 
 inp_lf:
-        tst     MTEMP+1,u       * Is buffer empty?
+        tst     input_len,u     * Is buffer empty?
         bne     inp_done        * No, terminate input
         lbra    inp_loop        * Yes, discard/ignore it
 
 inp_done:
         * Null-terminate the string
         ldx     TEMP2,u
-        ldb     MTEMP+1,u
+        ldb     input_len,u
         clr     b,x
         
         * Echo the CR
@@ -655,7 +655,7 @@ inp_done:
 
 inp_exit:
         clr     in_input_mode,u * Disable input mode
-        lda     MTEMP+1,u       * Return length in A
+        lda     input_len,u     * Return length in A
         puls    y,pc            * Restore Z-stack pointer
 
 *-------------------------------------------------------------------------------
