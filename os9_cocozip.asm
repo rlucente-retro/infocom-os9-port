@@ -138,6 +138,34 @@ set_l1_swap_limit:
         sta     max_swap_pages,u
 
 AllocateBuffers:
+        * Clear the screen physically for the loading screen
+        lda     #$0C            * Form Feed
+        lbsr    WriteStdoutChar
+        
+        * Calculate row (Y) = cur_rows / 2
+        lda     cur_rows,u
+        lsra                    * Divide by 2
+        pshs    a
+        
+        * Calculate col (X) = (cur_cols - 24) / 2
+        lda     cur_cols,u
+        cmpa    #24
+        blo     col_zero
+        suba    #24
+        lsra                    * Divide by 2
+        bra     got_col
+col_zero:
+        clra                    * Default to col 0 if screen is too narrow
+got_col:
+        puls    b               * B = Row
+        lbsr    MoveCursorToXY  * Move to calculated position
+        
+        * Print loading message
+        leax    loading_msg,pcr
+        ldy     #loading_len
+        lda     #1              * stdout
+        os9     I$Write
+
         * Request space for static variables + 1 header page
         ldd     zcode_offset,u
         addd    #256
@@ -376,6 +404,8 @@ ExitProgram:
 term_name fcs   /TERM/
 err_msg   fcc   /VDG MUST BE IN REVERSE VIDEO MODE/
 err_len   equ   *-err_msg
+loading_msg fcc /THE STORY IS LOADING .../
+loading_len equ *-loading_msg
 
         include OS9_DISPATCH.ASM
         include OS9_IO.ASM
