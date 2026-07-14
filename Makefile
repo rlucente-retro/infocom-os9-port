@@ -10,8 +10,7 @@ DEPS = os9_cocozip.asm os9_eq.asm os9_io.asm os9_disk.asm os9_paging.asm \
        os9_subs.asm os9_objects.asm os9_zstring.asm os9_read.asm os9_ops.asm \
        os9_screen.asm os9_main.asm os9_dispatch.asm
 
-#SRCDISKIMAGE = $(NITROS9DIR)/recipes/coco3/floppy/l2_coco3_minimal.dsk
-SRCDISKIMAGE = $(NITROS9DIR)/recipes/coco/floppy/l1_coco_minimal.dsk
+SRCDISKIMAGE = $(NITROS9DIR)/recipes/coco3/floppy/l2_coco3_minimal.dsk
 DSKIMAGE = zork.dsk
 
 all: $(DSKIMAGE)
@@ -29,11 +28,11 @@ $(DSKIMAGE): $(TARGET) $(SRCDISKIMAGE)
 .PHONY: all clean
 
 MAME_BINARY  ?= mame
-MAME_MACHINE ?= coco2b
+MAME_MACHINE ?= coco3
 MAME_FLAGS   ?= -rompath $(MAME_ROM_PATH) -window -skip_gameinfo -autoboot_delay 5 -autoboot_command "DOS\n" -ext fdc -ext:fdc:wd17xx:0 525qd
 
 $(SRCDISKIMAGE):
-	make -C $(NITROS9DIR)/recipes/coco/floppy MINIMAL=1
+	make -C $(NITROS9DIR)/recipes/coco3/floppy MINIMAL=1
 
 run: $(DSKIMAGE)
 	$(MAME_BINARY) $(MAME_MACHINE) $(MAME_FLAGS) -flop1 $(DSKIMAGE)
