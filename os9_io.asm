@@ -278,19 +278,7 @@ HandleWrapAndNewline:
         clr     cur_x,u
         inc     page_lines,u
         
-        * 1. Check for Paging ([MORE] prompt)
-        lda     page_lines,u
-        ldb     cur_rows,u
-        subb    #2              
-        pshs    b
-        cmpa    ,s+             
-        blo     nh_no_paging
-        
-        bsr     DisplayMorePrompt
-        clr     page_lines,u
-        
-nh_no_paging:
-        * 2. Check for Scrolling
+        * 1. Check for Scrolling / Next Line Transition
         lda     cur_y,u
         ldb     cur_rows,u
         subb    #2              
@@ -307,6 +295,18 @@ nh_inc:
 
 nh_sync:
         lbsr    MoveCursor           
+
+        * 2. Check for Paging ([MORE] prompt) after moving to new line
+        lda     page_lines,u
+        ldb     cur_rows,u
+        subb    #3              
+        pshs    b
+        cmpa    ,s+             
+        blo     nh_done
+        
+        bsr     DisplayMorePrompt
+        clr     page_lines,u
+nh_done:
         puls    a,b,x,y,pc
 
 *-------------------------------------------------------------------------------
@@ -318,12 +318,10 @@ more_len   equ     *-more_msg-1
 
 DisplayMorePrompt:
         pshs    a,b,x,y
-        ldx     cur_x,u         * Save logical cursor position
-        pshs    x
-        ldd     cur_cols,u
-        decb                    * Row rows-1
-        clra                    * Col 0
-        lbsr    MoveCursorToXY
+        lbsr    ZUSL            * Update status line first
+        
+        ldd     cur_x,u         * Save current active cursor position (cur_x and cur_y)
+        pshs    d               * Save (cur_x, cur_y) on CPU stack
         
         leax    more_msg,pcr
         lda     ,x+             * Get '['
@@ -335,21 +333,19 @@ DisplayMorePrompt:
         
         lbsr    WaitForKeypress        
         
-        * Erase [MORE] by overwriting with spaces
-        ldd     cur_cols,u
-        decb
-        clra
-        lbsr    MoveCursorToXY
+        * Erase [MORE] by overwriting with spaces at saved position
+        ldd     ,s              * Load saved cursor position from stack
+        lbsr    MoveCursorToXY  * Move physical cursor to that position
+        
         ldb     #more_len
         lda     #$20            * Space
 dm_cl:  lbsr    WriteStdoutChar
         decb                    
         bne     dm_cl
         
-        * Restore cursor to the content area
-        puls    x
-        stx     cur_x,u         * Restore logical cursor position
-        lbsr    MoveCursor
+        * Restore cursor back to the content area
+        puls    d               * Pull (cur_x, cur_y) from stack
+        lbsr    MoveCursorToXY  * Move physical cursor and restore logical cur_x/cur_y
         puls    a,b,x,y,pc
 
 *-------------------------------------------------------------------------------
