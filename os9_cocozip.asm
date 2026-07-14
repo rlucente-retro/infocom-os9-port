@@ -322,9 +322,15 @@ init_pt: std    ,x++
         bne     init_pt
         stx     TABTOP,u        * save pointer to end of initialized PTABLE
         
-        * 15. Clear the screen
-        lda     #$0C            * Form Feed / Clear Screen
-        lbsr    MYCHR
+        * 15. Clear the screen and position at line 1
+        lda     #$0C            * Form Feed
+        lbsr    WriteStdoutChar
+        lda     #$0A            * Line Feed
+        lbsr    WriteStdoutChar
+        clr     cur_x,u
+        lda     #1
+        sta     cur_y,u
+        sta     page_lines,u    * Reflected skipped line 0
         
         * Start the Z-machine
         lbra    MLOOP
