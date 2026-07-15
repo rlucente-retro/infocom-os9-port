@@ -61,3 +61,24 @@ Under the NitrOS-9 shell, execute `infocom` by specifying the story file path (e
 ```bash
 infocom zork1.dat
 ```
+
+---
+
+## Attribution
+
+The assembly source code in this repository is a port of the CoCo ZIP interpreter from the [infocom-z-interpreter](https://github.com/rlucente-retro/infocom-z-interpreter) repository. 
+
+The original source code was sourced from the [infocom-zcode-terps](https://github.com/erkyrath/infocom-zcode-terps/tree/master/colorcomputer) repository maintained by Andrew Plotkin (erkyrath). For more context on Andrew Plotkin's effort to recover this and other Infocom tools, see the Ars Technica article: [Infocom’s ingenious code-porting tools for Zork and other games have been found](https://arstechnica.com/gaming/2023/11/infocoms-ingenious-code-porting-tools-for-zork-and-other-games-have-been-found/).
+
+Additionally, John Linville's series of articles on the RetroTinker blog provided valuable insights into building and using Z-machine tools for the CoCo:
+* [Building CoCo Games with Inform](https://retrotinker.blogspot.com/2017/11/building-coco-games-with-inform.html)
+* [Using Infocom's ZIP on the CoCo](https://retrotinker.blogspot.com/2017/11/using-infocoms-zip-on-coco.html)
+* [Building Infocom Disk Images for the CoCo](https://retrotinker.blogspot.com/2017/11/building-infocom-disk-images-for-coco.html)
+* [Z Interpreter Source for CoCo Recovered](https://retrotinker.blogspot.com/2018/02/z-intepreter-source-for-coco-recovered.html)
+
+This NitrOS-9 port builds upon that work, with the following modifications:
+*   **NitrOS-9 Integration**: Replaced track/sector-based floppy disk I/O with standard OS-9 filesystem requests (`I$Seek` / `I$Read`).
+*   **User-Space Execution**: Rewritten as a position-independent assembly program supporting standard user processes, avoiding ROM overrides.
+*   **Adaptive Terminal Control**: Detects terminal width dynamically to format text with word wrap, reverse-video status line updates, and paging (`[MORE]` scrolls).
+*   **Standardized Saves**: Replaced disk-sector save/restore with standard named save files in the OS-9 filesystem.
+
