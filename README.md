@@ -1,6 +1,6 @@
 # NitrOS-9 Z-Machine Interpreter (infocom)
 
-This repository contains the NitrOS-9 (Level 1 and Level 2) native port of the Infocom Z-machine interpreter (ZIP). 
+This repository contains the NitrOS-9 (Level 1 and Level 2) native port of the Infocom Z-machine interpreter (ZIP). This project is a port of the original Infocom assembly source code for the Tandy Color Computer, which can be found in the [infocom-z-interpreter](https://github.com/rlucente-retro/infocom-z-interpreter) repository. 
 
 The interpreter runs as a standard user process under the NitrOS-9 operating system, supporting Infocom Version 3 Z-code games (such as *Zork I, II, III*, *Planetfall*, *The Witness*, *Deadline*, etc.) loaded directly from the OS-9 filesystem.
 
