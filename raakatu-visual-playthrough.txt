@@ -1,0 +1,408 @@
+spawn dfrotz -q -m -p raakatu.z3
+ Raaka-Tu                                         Score: 0        Moves: 0
+
+RAAKA-TU
+
+You are in a dense dark damp jungle.
+
+> NORTH
+You are in a dense damp dark jungle.
+
+> WEST
+You are in a dark dense damp jungle.
+
+> WEST
+Through the jungle you see the east wall of a great temple.
+A group of guards disappears around the corner to your left.
+
+> NORTH
+Through a gap in the jungle you can see the north wall of a magnificent temple.
+
+> WEST
+Through the dense undergrowth, you can see the great bronze gates on the west
+wall of the temple.
+A group of guards disappears around the corner to your left.
+
+> EAST
+You are standing before the west entrance of the temple.
+Great bronze gates engraved with images of serpents stand silently before you.
+There is a coin on the ground.
+
+> TAKE COIN
+Coin taken.
+
+> WEST
+Through the dense undergrowth, you can see the great bronze gates on the west
+wall of the temple.
+A group of guards marches around the corner to your right.
+
+> LOOK
+Through the dense undergrowth, you can see the great bronze gates on the west
+wall of the temple.
+A group of guards disappears around the corner to your left.
+
+> LOOK
+Through the dense undergrowth, you can see the great bronze gates on the west
+wall of the temple.
+
+> LOOK
+Through the dense undergrowth, you can see the great bronze gates on the west
+wall of the temple.
+
+> LOOK
+Through the dense undergrowth, you can see the great bronze gates on the west
+wall of the temple.
+A group of guards marches around the corner to your right.
+
+> LOOK
+Through the dense undergrowth, you can see the great bronze gates on the west
+wall of the temple.
+A group of guards disappears around the corner to your left.
+
+> LOOK
+Through the dense undergrowth, you can see the great bronze gates on the west
+wall of the temple.
+
+> LOOK
+Through the dense undergrowth, you can see the great bronze gates on the west
+wall of the temple.
+
+> LOOK
+Through the dense undergrowth, you can see the great bronze gates on the west
+wall of the temple.
+A group of guards marches around the corner to your right.
+
+> LOOK
+Through the dense undergrowth, you can see the great bronze gates on the west
+wall of the temple.
+A group of guards disappears around the corner to your left.
+
+> LOOK
+Through the dense undergrowth, you can see the great bronze gates on the west
+wall of the temple.
+
+> LOOK
+Through the dense undergrowth, you can see the great bronze gates on the west
+wall of the temple.
+
+> LOOK
+Through the dense undergrowth, you can see the great bronze gates on the west
+wall of the temple.
+A group of guards marches around the corner to your right.
+
+> LOOK
+Through the dense undergrowth, you can see the great bronze gates on the west
+wall of the temple.
+A group of guards disappears around the corner to your left.
+
+> NORTH
+Through a gap in the jungle you can see the north wall of a magnificent temple.
+A group of guards disappears around the corner to your left.
+
+> SOUTH
+You are at the north wall.
+A large network of vines clings to the wall.
+
+> CLIMB VINE
+You climb to the roof.  As you step on the roof, it collapses.  You are in a
+small room with granite walls and floor. There is a small opening to the east
+and a large hole in the ceiling.
+
+> EAST
+You are in a large rectangular room. On the floor of the east side of the room
+is an intricate oriental rug stretching between the north and south walls. In
+the east wall is a huge carved wooden door. To the south, a small hole leads to
+a dark passage way.
+
+> SOUTH
+You are in a dark passage way which slopes up and to the south.
+
+> SOUTH
+You are at the top of a passage which slopes down and to the north. There is a
+corridor to the east and another to the west.
+There is food here.
+
+> WEST
+You are in a small room with a single exit east.
+There is a large sword laying nearby.
+
+> TAKE SWORD
+Large sword  taken.
+
+> EAST
+You are at the top of a passage which slopes down and to the north. There is a
+corridor to the east and another to the west.
+There is food here.
+
+> EAST
+This is a t shaped room with exits east, south, and west.
+
+> EAST
+You are in a triangular room with openings in the east and west corners. There
+is a statue in the south corner with bow and arrow.
+The statue is facing the east door.  There is a tiny slot cut in the north wall.
+There is a message carved under the slot.
+
+> PUT COIN IN SLOT
+The statue turns to face the west door.
+
+> EAST
+You are at the south end of the great central hallway. Exits exist in the east
+and west walls.
+
+> TAKE GEM
+Precious gem taken.
+
+> NORTH
+You are at the north end of the great central hallway. Exits exist in the east
+and west walls. There is a door on the north wall.
+The door is closed.
+
+> NORTH
+The door blocks passage.
+
+> OPEN DOOR
+Rrrrreeeeeek - the door is open.
+
+> NORTH
+You are in a vault with a large door to the south.
+A bejeweled lever is on one wall. There is a plaque on the wall above the lever.
+The door closes behind you.
+
+> GET LEVER
+Bejeweled lever taken.
+
+> OPEN DOOR
+Scruuuuung the door opens.
+
+> SOUTH
+You are at the north end of the great central hallway. Exits exist in the east
+and west walls. There is a door on the north wall.
+The door closes again.
+
+> WEST
+You are at the entrance to a long dark tunnel which leads west. There is a
+passage east.
+A candle is in the room. There are cryptic runes above the tunnel.
+
+> WEST
+You are in the dark tunnel.
+
+> WEST
+You are at the entrance to a long dark tunnel which leads east. There is a
+passage west.
+
+> WEST
+You are in a large room with a single exit east.
+Before you stands an altar, stained with the blood of countless sacrifices. A
+golden idol stands in the center of the room.  A large serpent lies coiled on
+the floor.  The serpent  coils rapidly around you and constricts!
+
+> ATTACK SERPENT WITH SWORD
+Your large sword  sinks to the hilt in the serpent's scaly body! The serpent
+strikes, poison courses through your veins!
+
+> ATTACK SERPENT WITH SWORD
+Your large sword  sinks to the hilt in the serpent's scaly body! The serpent
+strikes, poison courses through your veins!
+
+> ATTACK SERPENT WITH SWORD
+Your large sword  throws a shower of sparks as it glances off the wall!  The
+serpent  strikes, you dodge his lunge!
+
+> ATTACK SERPENT WITH SWORD
+Your large sword  throws a shower of sparks as it glances off the wall!  The
+serpent  strikes, you dodge his lunge!
+
+> ATTACK SERPENT WITH SWORD
+Your large sword  sinks to the hilt in the serpent's scaly body! The serpent
+coils rapidly around you and constricts!
+
+> ATTACK SERPENT WITH SWORD
+Your large sword  sinks to the hilt in the serpent's scaly body! The serpent is
+dead.
+
+> TAKE IDOL
+Golden idol  taken.
+
+> EAST
+You are at the entrance to a long dark tunnel which leads east. There is a
+passage west.
+
+> EAST
+You are in the dark tunnel.
+
+> EAST
+You are at the entrance to a long dark tunnel which leads west. There is a
+passage east.
+A candle is in the room. There are cryptic runes above the tunnel.
+
+> EAST
+You are at the north end of the great central hallway. Exits exist in the east
+and west walls. There is a door on the north wall.
+The door is closed.
+
+> SOUTH
+You are at the south end of the great central hallway. Exits exist in the east
+and west walls.
+
+> EAST
+This is a t shaped room with exits east, south, and west.
+
+> SOUTH
+You are in a room with grey stone walls. Passages lead north and east.
+
+> EAST
+This is a round room with high walls. The only opening is to the west.
+A ring of finest gold is here.
+
+> TAKE RING
+Gold ring taken.
+
+> DROP RING
+Dropped.
+
+> TAKE RING
+Gold ring taken.
+
+> WEST
+You are in a room with grey stone walls. Passages lead north and east.
+
+> NORTH
+This is a t shaped room with exits east, south, and west.
+
+> EAST
+You are in a petite chamber. There is a larger room to the north and a passage
+to the west.
+
+> LOOK
+You are in a petite chamber. There is a larger room to the north and a passage
+to the west.
+
+> LOOK
+You are in a petite chamber. There is a larger room to the north and a passage
+to the west.
+
+> LOOK
+You are in a petite chamber. There is a larger room to the north and a passage
+to the west.
+
+> LOOK
+You are in a petite chamber. There is a larger room to the north and a passage
+to the west.
+
+> LOOK
+You are in a petite chamber. There is a larger room to the north and a passage
+to the west.
+
+> LOOK
+You are in a petite chamber. There is a larger room to the north and a passage
+to the west.
+
+> LOOK
+You are in a petite chamber. There is a larger room to the north and a passage
+to the west.
+
+> LOOK
+You are in a petite chamber. There is a larger room to the north and a passage
+to the west.
+
+> LOOK
+You are in a petite chamber. There is a larger room to the north and a passage
+to the west.
+
+> LOOK
+You are in a petite chamber. There is a larger room to the north and a passage
+to the west.
+
+> LOOK
+You are in a petite chamber. There is a larger room to the north and a passage
+to the west.
+
+> NORTH
+You are in a large room which smells of decaying flesh. There are exits north
+and south.
+There is a hideous stone gargoyle perched on a ledge above the north passage.
+
+> NORTH
+The gargoyle comes to life and jumps down to block your way! The gargoyle lunges
+at your face but you pull back.  He bites your shoulder instead!
+
+> ATTACK GARGOYLE WITH SWORD
+A lucky blow to the heart!  The gargoyle takes a final breath and then expires.
+
+> NORTH
+This is a tall room carved of stone with a single exit to the south.
+There is a golden chopstick here.
+
+> TAKE CHOPSTICK
+Golden chopstick taken.
+
+> SOUTH
+You are in a large room which smells of decaying flesh. There are exits north
+and south.
+There is the dead carcass of an ugly gargoyle nearby.
+
+> SOUTH
+You are in a petite chamber. There is a larger room to the north and a passage
+to the west.
+
+> WEST
+This is a t shaped room with exits east, south, and west.
+
+> WEST
+You are at the south end of the great central hallway. Exits exist in the east
+and west walls.
+
+> NORTH
+You are at the north end of the great central hallway. Exits exist in the east
+and west walls. There is a door on the north wall.
+The door is closed.
+
+> WEST
+You are at the entrance to a long dark tunnel which leads west. There is a
+passage east.
+A candle is in the room. There are cryptic runes above the tunnel.
+
+> WEST
+You are in the dark tunnel.
+
+> WEST
+You are at the entrance to a long dark tunnel which leads east. There is a
+passage west.
+
+> WEST
+You are in a large room with a single exit east.
+Before you stands an altar, stained with the blood of countless sacrifices. A
+large dead serpent lies on the floor.
+
+> LOOK
+You are in a large room with a single exit east.
+Before you stands an altar, stained with the blood of countless sacrifices. A
+large dead serpent lies on the floor.
+
+> PULL ALTAR
+Ugh! With great difficulty you manage to move the altar and you discover a
+secret passage.
+
+> CLIMB PASSAGE
+You are in the secret passage which leads east.
+The altar moves back to seal the hole above you.
+
+> EAST
+You are at the end of the passage. There is a hole in the ceiling.
+
+> CLIMB HOLE
+As you climb out of the hole, it seems to magically seal up behind you.  You are
+at the south wall.
+
+> SOUTH
+In a clearing before you stands the south wall of a great temple.
+
+> SOUTH
+You are in a dense dark damp jungle.
+
+> SCORE
+Out of a possible fifty, your score is  50.
+
+>
