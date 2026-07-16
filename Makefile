@@ -15,6 +15,7 @@ MAME_MACHINE ?= coco3
 
 # Story file to include on the disk image (e.g., ziptest.z3, ZORK1.DAT)
 STORY = ziptest.z3
+LOWER_STORY = $(shell echo $(STORY) | tr 'A-Z' 'a-z')
 
 ifeq ($(MAME_MACHINE),coco2b)
 SRCDISKIMAGE = $(NITROS9DIR)/recipes/coco/floppy/l1_coco_minimal.dsk
@@ -24,7 +25,7 @@ SRCDISKIMAGE = $(NITROS9DIR)/recipes/coco3/floppy/l2_coco3_minimal.dsk
 SRCDISKDIR = $(NITROS9DIR)/recipes/coco3/floppy
 endif
 
-DSKIMAGE = $(basename $(STORY)).dsk
+DSKIMAGE = $(basename $(LOWER_STORY)).dsk
 
 all: $(DSKIMAGE)
 
@@ -36,7 +37,7 @@ $(DSKIMAGE): $(TARGET) $(SRCDISKIMAGE)
 	cp $(SRCDISKIMAGE) $(DSKIMAGE)
 	os9 copy $(TARGET) $(DSKIMAGE),CMDS/$(TARGET)
 	os9 attr -e -pe -q $(DSKIMAGE),CMDS/$(TARGET)
-	os9 copy $(STORY) $(DSKIMAGE),$(STORY)
+	os9 copy $(STORY) $(DSKIMAGE),$(notdir $(LOWER_STORY))
 
 .PHONY: all clean
 

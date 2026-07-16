@@ -58,7 +58,7 @@ You can easily change the story file packaged into the disk image by overriding 
 ```bash
 make STORY=ZORK1.DAT
 ```
-This dynamically names and builds `ZORK1.dsk` containing both the `infocom` executable and the `ZORK1.DAT` story file.
+This dynamically names and builds `zork1.dsk` containing both the `infocom` executable and the `zork1.dat` story file.
 
 #### Targeting CoCo 2 vs CoCo 3
 By default, the Makefile targets the Tandy Color Computer 3 (`coco3`). You can target the Tandy Color Computer 2 (`coco2b`) by overriding the `MAME_MACHINE` variable:
@@ -79,7 +79,7 @@ Under the NitrOS-9 shell, execute `infocom` by specifying the story file path:
 ```bash
 infocom ziptest.z3
 # Or:
-infocom ZORK1.DAT
+infocom zork1.dat
 ```
 
 ---
