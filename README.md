@@ -45,21 +45,34 @@ The project is structured into modular assembly components included by the maste
 ### Build Instructions
 Before building, ensure that the `NITROS9DIR` environment variable is set to the root of your local NitrOS-9 repository (used to locate system definition files and the base minimal disk image recipes). The assembler (`lwasm`) must be installed and available in your `PATH`.
 
-Once configured, run the default build target to compile the interpreter and build the bootable disk image (`zork.dsk`) containing the `infocom` executable and `zork1.dat`:
+By default, the build compiles the interpreter and copies the default test story file `ziptest.z3` (which is based on the official regression test suite `ziptest-r40-s840613.z3` available at [Andrew Plotkin's eblong.com catalog](https://eblong.com/infocom/#ziptest)) onto a bootable floppy disk image (`ziptest.dsk`).
+
+Run the default build target:
 ```bash
 make
 ```
-This compiles the master source file `os9_cocozip.asm` using `lwasm` and outputs the executable binary `infocom` inside the command directory of the generated `zork.dsk` image.
+This compiles the master source file `os9_cocozip.asm` using `lwasm` and outputs the executable binary `infocom` and the story file inside the command and data directories of the generated `ziptest.dsk` image.
+
+#### Customizing the Story File
+You can easily change the story file packaged into the disk image by overriding the `STORY` variable on the command line or editing the `Makefile`. For example, to generate a disk image containing `ZORK1.DAT`:
+```bash
+make STORY=ZORK1.DAT
+```
+This dynamically names and builds `ZORK1.dsk` containing both the `infocom` executable and the `ZORK1.DAT` story file.
 
 To run the generated disk image in the MAME emulator:
 ```bash
 make run
+# Or for a custom story disk image:
+make run STORY=ZORK1.DAT
 ```
 
 ### Running the Interpreter
-Under the NitrOS-9 shell, execute `infocom` by specifying the story file path (e.g. `zork1.dat`):
+Under the NitrOS-9 shell, execute `infocom` by specifying the story file path:
 ```bash
-infocom zork1.dat
+infocom ziptest.z3
+# Or:
+infocom ZORK1.DAT
 ```
 
 ---

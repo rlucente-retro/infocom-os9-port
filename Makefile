@@ -10,8 +10,10 @@ DEPS = os9_cocozip.asm os9_eq.asm os9_io.asm os9_disk.asm os9_paging.asm \
        os9_subs.asm os9_objects.asm os9_zstring.asm os9_read.asm os9_ops.asm \
        os9_screen.asm os9_main.asm os9_dispatch.asm
 
+# Story file to include on the disk image (e.g., ziptest.z3, ZORK1.DAT)
+STORY = ziptest.z3
 SRCDISKIMAGE = $(NITROS9DIR)/recipes/coco3/floppy/l2_coco3_minimal.dsk
-DSKIMAGE = zork.dsk
+DSKIMAGE = $(basename $(STORY)).dsk
 
 all: $(DSKIMAGE)
 
@@ -23,7 +25,7 @@ $(DSKIMAGE): $(TARGET) $(SRCDISKIMAGE)
 	cp $(SRCDISKIMAGE) $(DSKIMAGE)
 	os9 copy $(TARGET) $(DSKIMAGE),CMDS/$(TARGET)
 	os9 attr -e -pe -q $(DSKIMAGE),CMDS/$(TARGET)
-	os9 copy zork1.dat $(DSKIMAGE),zork1.dat
+	os9 copy $(STORY) $(DSKIMAGE),$(STORY)
 
 .PHONY: all clean
 
