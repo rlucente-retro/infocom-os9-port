@@ -11,6 +11,7 @@ ZORK1.DAT
 ZORK1_BACK.DAT
 ZORK1_CHECK.DAT
 ZORK1_IMG.DAT
+!raakatu.dat
 
 # Trace/log files
 trace.txt

@@ -19,11 +19,12 @@ $(TARGET): $(DEPS)
 	$(ASM) -f os9 $(OPTIONS) --includedir=$(NITROS9DIR)/defs -o $@ os9_cocozip.asm
 
 # Create a test disk image (requires imgtool and os9 tools)
-$(DSKIMAGE): $(TARGET) $(SRCDISKIMAGE)
+$(DSKIMAGE): $(TARGET) $(SRCDISKIMAGE) zork1.dat raakatu.dat
 	cp $(SRCDISKIMAGE) $(DSKIMAGE)
 	os9 copy $(TARGET) $(DSKIMAGE),CMDS/$(TARGET)
 	os9 attr -e -pe -q $(DSKIMAGE),CMDS/$(TARGET)
 	os9 copy zork1.dat $(DSKIMAGE),zork1.dat
+	os9 copy raakatu.dat $(DSKIMAGE),raakatu.dat
 
 .PHONY: all clean
 

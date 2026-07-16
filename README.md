@@ -45,7 +45,7 @@ The project is structured into modular assembly components included by the maste
 ### Build Instructions
 Before building, ensure that the `NITROS9DIR` environment variable is set to the root of your local NitrOS-9 repository (used to locate system definition files and the base minimal disk image recipes). The assembler (`lwasm`) must be installed and available in your `PATH`.
 
-Once configured, run the default build target to compile the interpreter and build the bootable disk image (`zork.dsk`) containing the `infocom` executable and `zork1.dat`:
+Once configured, run the default build target to compile the interpreter and build the bootable disk image (`zork.dsk`) containing the `infocom` executable, `zork1.dat`, and the bundled Version 3 port of *Raaka-Tu* (`raakatu.dat`):
 ```bash
 make
 ```
@@ -60,4 +60,10 @@ make run
 Under the NitrOS-9 shell, execute `infocom` by specifying the story file path (e.g. `zork1.dat`):
 ```bash
 infocom zork1.dat
+```
+
+To play *Raaka-Tu*:
+
+```bash
+infocom raakatu.dat
 ```
