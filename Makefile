@@ -13,7 +13,7 @@ DEPS = os9_cocozip.asm os9_eq.asm os9_io.asm os9_disk.asm os9_paging.asm \
 # MAME machine to target (coco3 or coco2b)
 MAME_MACHINE ?= coco3
 
-# Story file to include on the disk image (e.g., ziptest.z3, ZORK1.DAT)
+# Story file to include on the disk image (e.g., ziptest.z3, zork1.dat)
 STORY = ziptest.z3
 LOWER_STORY = $(shell echo $(STORY) | tr 'A-Z' 'a-z')
 

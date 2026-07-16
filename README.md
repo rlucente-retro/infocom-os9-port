@@ -54,9 +54,9 @@ make
 This compiles the master source file `os9_cocozip.asm` using `lwasm` and outputs the executable binary `infocom` and the story file inside the command and data directories of the generated `ziptest.dsk` image.
 
 #### Customizing the Story File
-You can easily change the story file packaged into the disk image by overriding the `STORY` variable on the command line or editing the `Makefile`. For example, to generate a disk image containing `ZORK1.DAT`:
+You can easily change the story file packaged into the disk image by overriding the `STORY` variable on the command line or editing the `Makefile`. For example, to generate a disk image containing `zork1.dat`:
 ```bash
-make STORY=ZORK1.DAT
+make STORY=zork1.dat
 ```
 This dynamically names and builds `zork1.dsk` containing both the `infocom` executable and the `zork1.dat` story file.
 
@@ -71,7 +71,7 @@ To run the generated disk image in the MAME emulator:
 ```bash
 make run
 # Or for a custom story disk image / machine target:
-make run STORY=ZORK1.DAT MAME_MACHINE=coco2b
+make run STORY=zork1.dat MAME_MACHINE=coco2b
 ```
 
 ### Running the Interpreter
