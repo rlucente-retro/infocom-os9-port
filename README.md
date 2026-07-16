@@ -67,6 +67,21 @@ To play *Raaka-Tu*:
 ```bash
 infocom raakatu.dat
 ```
+
+### Playing Raaka-Tu with Gargoyle
+
+The repository also includes the same story as `raakatu.z3` for desktop
+Z-machine interpreters. Open that file—not `raakatu.dat`—with Gargoyle:
+
+```bash
+open -a Gargoyle raakatu.z3
+```
+
+The two files contain identical story bytes. The separate names are necessary
+because the NitrOS-9 interpreter conventionally uses `.dat`, while Gargoyle
+routes `.z3` to its Z-machine interpreter and treats `.dat` as a different
+adventure format.
+
 ---
 
 ## Attribution
@@ -86,4 +101,3 @@ This NitrOS-9 port builds upon that work, with the following modifications:
 *   **User-Space Execution**: Rewritten as a position-independent assembly program supporting standard user processes, avoiding ROM overrides.
 *   **Adaptive Terminal Control**: Detects terminal width dynamically to format text with word wrap, reverse-video status line updates, and paging (`[MORE]` scrolls).
 *   **Standardized Saves**: Replaced disk-sector save/restore with standard named save files in the OS-9 filesystem.
-
