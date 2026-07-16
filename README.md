@@ -60,11 +60,18 @@ make STORY=ZORK1.DAT
 ```
 This dynamically names and builds `ZORK1.dsk` containing both the `infocom` executable and the `ZORK1.DAT` story file.
 
+#### Targeting CoCo 2 vs CoCo 3
+By default, the Makefile targets the Tandy Color Computer 3 (`coco3`). You can target the Tandy Color Computer 2 (`coco2b`) by overriding the `MAME_MACHINE` variable:
+```bash
+make MAME_MACHINE=coco2b
+```
+This automatically selects the CoCo 2 minimal base disk image (`l1_coco_minimal.dsk`), invokes the appropriate NitrOS-9 sub-make recipes to build it if it does not exist, and runs MAME with the `coco2b` machine configuration.
+
 To run the generated disk image in the MAME emulator:
 ```bash
 make run
-# Or for a custom story disk image:
-make run STORY=ZORK1.DAT
+# Or for a custom story disk image / machine target:
+make run STORY=ZORK1.DAT MAME_MACHINE=coco2b
 ```
 
 ### Running the Interpreter
