@@ -6,403 +6,603 @@ RAAKA-TU
 You are in a dense dark damp jungle.
 
 > NORTH
+ Raaka-Tu                                         Score: 0        Moves: 1
+
 You are in a dense damp dark jungle.
 
 > WEST
+ Raaka-Tu                                         Score: 0        Moves: 2
+
 You are in a dark dense damp jungle.
 
 > WEST
+ Raaka-Tu                                         Score: 0        Moves: 3
+
 Through the jungle you see the east wall of a great temple.
 A group of guards disappears around the corner to your left.
 
 > NORTH
+ Raaka-Tu                                         Score: 0        Moves: 4
+
 Through a gap in the jungle you can see the north wall of a magnificent temple.
 
 > WEST
+ Raaka-Tu                                         Score: 0        Moves: 5
+
 Through the dense undergrowth, you can see the great bronze gates on the west
 wall of the temple.
 A group of guards disappears around the corner to your left.
 
 > EAST
+ Raaka-Tu                                         Score: 0        Moves: 6
+
 You are standing before the west entrance of the temple.
 Great bronze gates engraved with images of serpents stand silently before you.
 There is a coin on the ground.
 
 > TAKE COIN
+ Raaka-Tu                                         Score: 5        Moves: 7
+
 Coin taken.
 
 > WEST
+ Raaka-Tu                                         Score: 5        Moves: 8
+
 Through the dense undergrowth, you can see the great bronze gates on the west
 wall of the temple.
 A group of guards marches around the corner to your right.
 
 > LOOK
+ Raaka-Tu                                         Score: 5        Moves: 9
+
 Through the dense undergrowth, you can see the great bronze gates on the west
 wall of the temple.
 A group of guards disappears around the corner to your left.
 
 > LOOK
+ Raaka-Tu                                         Score: 5        Moves: 10
+
 Through the dense undergrowth, you can see the great bronze gates on the west
 wall of the temple.
 
 > LOOK
+ Raaka-Tu                                         Score: 5        Moves: 11
+
 Through the dense undergrowth, you can see the great bronze gates on the west
 wall of the temple.
 
 > LOOK
+ Raaka-Tu                                         Score: 5        Moves: 12
+
 Through the dense undergrowth, you can see the great bronze gates on the west
 wall of the temple.
 A group of guards marches around the corner to your right.
 
 > LOOK
+ Raaka-Tu                                         Score: 5        Moves: 13
+
 Through the dense undergrowth, you can see the great bronze gates on the west
 wall of the temple.
 A group of guards disappears around the corner to your left.
 
 > LOOK
+ Raaka-Tu                                         Score: 5        Moves: 14
+
 Through the dense undergrowth, you can see the great bronze gates on the west
 wall of the temple.
 
 > LOOK
+ Raaka-Tu                                         Score: 5        Moves: 15
+
 Through the dense undergrowth, you can see the great bronze gates on the west
 wall of the temple.
 
 > LOOK
+ Raaka-Tu                                         Score: 5        Moves: 16
+
 Through the dense undergrowth, you can see the great bronze gates on the west
 wall of the temple.
 A group of guards marches around the corner to your right.
 
 > LOOK
+ Raaka-Tu                                         Score: 5        Moves: 17
+
 Through the dense undergrowth, you can see the great bronze gates on the west
 wall of the temple.
 A group of guards disappears around the corner to your left.
 
 > LOOK
+ Raaka-Tu                                         Score: 5        Moves: 18
+
 Through the dense undergrowth, you can see the great bronze gates on the west
 wall of the temple.
 
 > LOOK
+ Raaka-Tu                                         Score: 5        Moves: 19
+
 Through the dense undergrowth, you can see the great bronze gates on the west
 wall of the temple.
 
 > LOOK
+ Raaka-Tu                                         Score: 5        Moves: 20
+
 Through the dense undergrowth, you can see the great bronze gates on the west
 wall of the temple.
 A group of guards marches around the corner to your right.
 
 > LOOK
+ Raaka-Tu                                         Score: 5        Moves: 21
+
 Through the dense undergrowth, you can see the great bronze gates on the west
 wall of the temple.
 A group of guards disappears around the corner to your left.
 
 > NORTH
+ Raaka-Tu                                         Score: 5        Moves: 22
+
 Through a gap in the jungle you can see the north wall of a magnificent temple.
 A group of guards disappears around the corner to your left.
 
 > SOUTH
+ Raaka-Tu                                         Score: 5        Moves: 23
+
 You are at the north wall.
 A large network of vines clings to the wall.
 
 > CLIMB VINE
+ Raaka-Tu                                         Score: 5        Moves: 24
+
 You climb to the roof.  As you step on the roof, it collapses.  You are in a
 small room with granite walls and floor. There is a small opening to the east
 and a large hole in the ceiling.
 
 > EAST
+ Raaka-Tu                                         Score: 5        Moves: 25
+
 You are in a large rectangular room. On the floor of the east side of the room
 is an intricate oriental rug stretching between the north and south walls. In
 the east wall is a huge carved wooden door. To the south, a small hole leads to
 a dark passage way.
 
 > SOUTH
+ Raaka-Tu                                         Score: 5        Moves: 26
+
 You are in a dark passage way which slopes up and to the south.
 
 > SOUTH
+ Raaka-Tu                                         Score: 5        Moves: 27
+
 You are at the top of a passage which slopes down and to the north. There is a
 corridor to the east and another to the west.
 There is food here.
 
 > WEST
+ Raaka-Tu                                         Score: 5        Moves: 28
+
 You are in a small room with a single exit east.
 There is a large sword laying nearby.
 
 > TAKE SWORD
+ Raaka-Tu                                         Score: 5        Moves: 29
+
 Large sword  taken.
 
 > EAST
+ Raaka-Tu                                         Score: 5        Moves: 30
+
 You are at the top of a passage which slopes down and to the north. There is a
 corridor to the east and another to the west.
 There is food here.
 
 > EAST
+ Raaka-Tu                                         Score: 5        Moves: 31
+
 This is a t shaped room with exits east, south, and west.
 
 > EAST
+ Raaka-Tu                                         Score: 5        Moves: 32
+
 You are in a triangular room with openings in the east and west corners. There
 is a statue in the south corner with bow and arrow.
 The statue is facing the east door.  There is a tiny slot cut in the north wall.
 There is a message carved under the slot.
 
 > PUT COIN IN SLOT
+ Raaka-Tu                                         Score: 0        Moves: 33
+
 The statue turns to face the west door.
 
 > EAST
+ Raaka-Tu                                         Score: 0        Moves: 34
+
 You are at the south end of the great central hallway. Exits exist in the east
 and west walls.
 
 > TAKE GEM
+ Raaka-Tu                                         Score: 5        Moves: 35
+
 Precious gem taken.
 
 > NORTH
+ Raaka-Tu                                         Score: 5        Moves: 36
+
 You are at the north end of the great central hallway. Exits exist in the east
 and west walls. There is a door on the north wall.
 The door is closed.
 
 > NORTH
+ Raaka-Tu                                         Score: 5        Moves: 37
+
 The door blocks passage.
 
 > OPEN DOOR
+ Raaka-Tu                                         Score: 5        Moves: 38
+
 Rrrrreeeeeek - the door is open.
 
 > NORTH
+ Raaka-Tu                                         Score: 5        Moves: 39
+
 You are in a vault with a large door to the south.
 A bejeweled lever is on one wall. There is a plaque on the wall above the lever.
 The door closes behind you.
 
 > GET LEVER
+ Raaka-Tu                                         Score: 10       Moves: 40
+
 Bejeweled lever taken.
 
 > OPEN DOOR
+ Raaka-Tu                                         Score: 10       Moves: 41
+
 Scruuuuung the door opens.
 
 > SOUTH
+ Raaka-Tu                                         Score: 10       Moves: 42
+
 You are at the north end of the great central hallway. Exits exist in the east
 and west walls. There is a door on the north wall.
 The door closes again.
 
 > WEST
+ Raaka-Tu                                         Score: 10       Moves: 43
+
 You are at the entrance to a long dark tunnel which leads west. There is a
 passage east.
 A candle is in the room. There are cryptic runes above the tunnel.
 
 > WEST
+ Raaka-Tu                                         Score: 10       Moves: 44
+
 You are in the dark tunnel.
 
 > WEST
+ Raaka-Tu                                         Score: 10       Moves: 45
+
 You are at the entrance to a long dark tunnel which leads east. There is a
 passage west.
 
 > WEST
+ Raaka-Tu                                         Score: 10       Moves: 46
+
 You are in a large room with a single exit east.
 Before you stands an altar, stained with the blood of countless sacrifices. A
 golden idol stands in the center of the room.  A large serpent lies coiled on
 the floor.  The serpent  coils rapidly around you and constricts!
 
 > ATTACK SERPENT WITH SWORD
+ Raaka-Tu                                         Score: 10       Moves: 47
+
 Your large sword  sinks to the hilt in the serpent's scaly body! The serpent
 strikes, poison courses through your veins!
 
 > ATTACK SERPENT WITH SWORD
+ Raaka-Tu                                         Score: 10       Moves: 48
+
 Your large sword  sinks to the hilt in the serpent's scaly body! The serpent
 strikes, poison courses through your veins!
 
 > ATTACK SERPENT WITH SWORD
+ Raaka-Tu                                         Score: 10       Moves: 49
+
 Your large sword  throws a shower of sparks as it glances off the wall!  The
 serpent  strikes, you dodge his lunge!
 
 > ATTACK SERPENT WITH SWORD
+ Raaka-Tu                                         Score: 10       Moves: 50
+
 Your large sword  throws a shower of sparks as it glances off the wall!  The
 serpent  strikes, you dodge his lunge!
 
 > ATTACK SERPENT WITH SWORD
+ Raaka-Tu                                         Score: 10       Moves: 51
+
 Your large sword  sinks to the hilt in the serpent's scaly body! The serpent
 coils rapidly around you and constricts!
 
 > ATTACK SERPENT WITH SWORD
+ Raaka-Tu                                         Score: 10       Moves: 52
+
 Your large sword  sinks to the hilt in the serpent's scaly body! The serpent is
 dead.
 
 > TAKE IDOL
+ Raaka-Tu                                         Score: 15       Moves: 53
+
 Golden idol  taken.
 
 > EAST
+ Raaka-Tu                                         Score: 15       Moves: 54
+
 You are at the entrance to a long dark tunnel which leads east. There is a
 passage west.
 
 > EAST
+ Raaka-Tu                                         Score: 15       Moves: 55
+
 You are in the dark tunnel.
 
 > EAST
+ Raaka-Tu                                         Score: 15       Moves: 56
+
 You are at the entrance to a long dark tunnel which leads west. There is a
 passage east.
 A candle is in the room. There are cryptic runes above the tunnel.
 
 > EAST
+ Raaka-Tu                                         Score: 15       Moves: 57
+
 You are at the north end of the great central hallway. Exits exist in the east
 and west walls. There is a door on the north wall.
 The door is closed.
 
 > SOUTH
+ Raaka-Tu                                         Score: 15       Moves: 58
+
 You are at the south end of the great central hallway. Exits exist in the east
 and west walls.
 
 > EAST
+ Raaka-Tu                                         Score: 15       Moves: 59
+
 This is a t shaped room with exits east, south, and west.
 
 > SOUTH
+ Raaka-Tu                                         Score: 15       Moves: 60
+
 You are in a room with grey stone walls. Passages lead north and east.
 
 > EAST
+ Raaka-Tu                                         Score: 15       Moves: 61
+
 This is a round room with high walls. The only opening is to the west.
 A ring of finest gold is here.
 
 > TAKE RING
+ Raaka-Tu                                         Score: 20       Moves: 62
+
 Gold ring taken.
 
 > DROP RING
+ Raaka-Tu                                         Score: 15       Moves: 63
+
 Dropped.
 
 > TAKE RING
+ Raaka-Tu                                         Score: 20       Moves: 64
+
 Gold ring taken.
 
 > WEST
+ Raaka-Tu                                         Score: 20       Moves: 65
+
 You are in a room with grey stone walls. Passages lead north and east.
 
 > NORTH
+ Raaka-Tu                                         Score: 20       Moves: 66
+
 This is a t shaped room with exits east, south, and west.
 
 > EAST
+ Raaka-Tu                                         Score: 20       Moves: 67
+
 You are in a petite chamber. There is a larger room to the north and a passage
 to the west.
 
 > LOOK
+ Raaka-Tu                                         Score: 20       Moves: 68
+
 You are in a petite chamber. There is a larger room to the north and a passage
 to the west.
 
 > LOOK
+ Raaka-Tu                                         Score: 20       Moves: 69
+
 You are in a petite chamber. There is a larger room to the north and a passage
 to the west.
 
 > LOOK
+ Raaka-Tu                                         Score: 20       Moves: 70
+
 You are in a petite chamber. There is a larger room to the north and a passage
 to the west.
 
 > LOOK
+ Raaka-Tu                                         Score: 20       Moves: 71
+
 You are in a petite chamber. There is a larger room to the north and a passage
 to the west.
 
 > LOOK
+ Raaka-Tu                                         Score: 20       Moves: 72
+
 You are in a petite chamber. There is a larger room to the north and a passage
 to the west.
 
 > LOOK
+ Raaka-Tu                                         Score: 20       Moves: 73
+
 You are in a petite chamber. There is a larger room to the north and a passage
 to the west.
 
 > LOOK
+ Raaka-Tu                                         Score: 20       Moves: 74
+
 You are in a petite chamber. There is a larger room to the north and a passage
 to the west.
 
 > LOOK
+ Raaka-Tu                                         Score: 20       Moves: 75
+
 You are in a petite chamber. There is a larger room to the north and a passage
 to the west.
 
 > LOOK
+ Raaka-Tu                                         Score: 20       Moves: 76
+
 You are in a petite chamber. There is a larger room to the north and a passage
 to the west.
 
 > LOOK
+ Raaka-Tu                                         Score: 20       Moves: 77
+
 You are in a petite chamber. There is a larger room to the north and a passage
 to the west.
 
 > LOOK
+ Raaka-Tu                                         Score: 20       Moves: 78
+
 You are in a petite chamber. There is a larger room to the north and a passage
 to the west.
 
 > NORTH
+ Raaka-Tu                                         Score: 20       Moves: 79
+
 You are in a large room which smells of decaying flesh. There are exits north
 and south.
 There is a hideous stone gargoyle perched on a ledge above the north passage.
 
 > NORTH
+ Raaka-Tu                                         Score: 20       Moves: 80
+
 The gargoyle comes to life and jumps down to block your way! The gargoyle lunges
 at your face but you pull back.  He bites your shoulder instead!
 
 > ATTACK GARGOYLE WITH SWORD
+ Raaka-Tu                                         Score: 20       Moves: 81
+
 A lucky blow to the heart!  The gargoyle takes a final breath and then expires.
 
 > NORTH
+ Raaka-Tu                                         Score: 20       Moves: 82
+
 This is a tall room carved of stone with a single exit to the south.
 There is a golden chopstick here.
 
 > TAKE CHOPSTICK
+ Raaka-Tu                                         Score: 25       Moves: 83
+
 Golden chopstick taken.
 
 > SOUTH
+ Raaka-Tu                                         Score: 25       Moves: 84
+
 You are in a large room which smells of decaying flesh. There are exits north
 and south.
 There is the dead carcass of an ugly gargoyle nearby.
 
 > SOUTH
+ Raaka-Tu                                         Score: 25       Moves: 85
+
 You are in a petite chamber. There is a larger room to the north and a passage
 to the west.
 
 > WEST
+ Raaka-Tu                                         Score: 25       Moves: 86
+
 This is a t shaped room with exits east, south, and west.
 
 > WEST
+ Raaka-Tu                                         Score: 25       Moves: 87
+
 You are at the south end of the great central hallway. Exits exist in the east
 and west walls.
 
 > NORTH
+ Raaka-Tu                                         Score: 25       Moves: 88
+
 You are at the north end of the great central hallway. Exits exist in the east
 and west walls. There is a door on the north wall.
 The door is closed.
 
 > WEST
+ Raaka-Tu                                         Score: 25       Moves: 89
+
 You are at the entrance to a long dark tunnel which leads west. There is a
 passage east.
 A candle is in the room. There are cryptic runes above the tunnel.
 
 > WEST
+ Raaka-Tu                                         Score: 25       Moves: 90
+
 You are in the dark tunnel.
 
 > WEST
+ Raaka-Tu                                         Score: 25       Moves: 91
+
 You are at the entrance to a long dark tunnel which leads east. There is a
 passage west.
 
 > WEST
+ Raaka-Tu                                         Score: 25       Moves: 92
+
 You are in a large room with a single exit east.
 Before you stands an altar, stained with the blood of countless sacrifices. A
 large dead serpent lies on the floor.
 
 > LOOK
+ Raaka-Tu                                         Score: 25       Moves: 93
+
 You are in a large room with a single exit east.
 Before you stands an altar, stained with the blood of countless sacrifices. A
 large dead serpent lies on the floor.
 
 > PULL ALTAR
+ Raaka-Tu                                         Score: 25       Moves: 94
+
 Ugh! With great difficulty you manage to move the altar and you discover a
 secret passage.
 
 > CLIMB PASSAGE
+ Raaka-Tu                                         Score: 25       Moves: 95
+
 You are in the secret passage which leads east.
 The altar moves back to seal the hole above you.
 
 > EAST
+ Raaka-Tu                                         Score: 25       Moves: 96
+
 You are at the end of the passage. There is a hole in the ceiling.
 
 > CLIMB HOLE
+ Raaka-Tu                                         Score: 25       Moves: 97
+
 As you climb out of the hole, it seems to magically seal up behind you.  You are
 at the south wall.
 
 > SOUTH
+ Raaka-Tu                                         Score: 25       Moves: 98
+
 In a clearing before you stands the south wall of a great temple.
 
 > SOUTH
+ Raaka-Tu                                         Score: 50       Moves: 99
+
 You are in a dense dark damp jungle.
 
 > SCORE
+ Raaka-Tu                                         Score: 50       Moves: 100
+
 Out of a possible fifty, your score is  50.
 
 >
