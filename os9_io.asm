@@ -200,7 +200,7 @@ chr_done:
 FLUSH_WORD:
         pshs    a,b,x,y
         ldb     word_len,u
-        beq     fw_exit         * Empty buffer, done
+        lbeq    fw_exit         * Empty buffer, done
         
         lda     cur_x,u
         adda    word_len,u      * A = cur_x + word_len
@@ -210,14 +210,50 @@ FLUSH_WORD:
 fw_wrap:
         lda     word_len,u
         cmpa    cur_cols,u
-        bhi     fw_print        * If word is longer than line, don't wrap (it wouldn't fit anyway)
+        bhi     fw_slow         * Oversized words need per-character wrapping
         
         * Wrap: emit CR
         lda     #$0D
         lbsr    mychr_direct
         
 fw_print:
-        * Iterate and print buffered characters
+        * Convert the complete word once when using the Level 1 display path.
+        ldx     scroll_vec,u
+        leay    L1Scroll,pcr
+        pshs    y
+        cmpx    ,s++
+        bne     fw_write
+
+        leax    word_buf,u
+        ldb     word_len,u
+fw_l1_convert:
+        lda     ,x
+        cmpa    #'a'
+        blo     fw_l1_next
+        cmpa    #'z'
+        bhi     fw_l1_next
+        suba    #$20
+        sta     ,x
+fw_l1_next:
+        leax    1,x
+        decb
+        bne     fw_l1_convert
+
+fw_write:
+        leax    word_buf,u
+        clra
+        ldb     word_len,u
+        tfr     d,y
+        lda     #1              * Path 1 (stdout)
+        os9     I$Write          * Write the buffered word in one kernel call
+        lda     cur_x,u
+        adda    word_len,u
+        sta     cur_x,u
+        clr     was_cr,u
+        bra     fw_done
+
+fw_slow:
+        * Oversized words can cross line boundaries; retain full character logic.
         clrb                    * B = loop index
 fw_lp:  cmpb    word_len,u
         bhs     fw_done
@@ -242,19 +278,7 @@ HandleWrapAndNewline:
         clr     cur_x,u
         inc     page_lines,u
         
-        * 1. Check for Paging ([MORE] prompt)
-        lda     page_lines,u
-        ldb     cur_rows,u
-        subb    #2              
-        pshs    b
-        cmpa    ,s+             
-        blo     nh_no_paging
-        
-        bsr     DisplayMorePrompt
-        clr     page_lines,u
-        
-nh_no_paging:
-        * 2. Check for Scrolling
+        * 1. Check for Scrolling / Next Line Transition
         lda     cur_y,u
         ldb     cur_rows,u
         subb    #2              
@@ -271,6 +295,18 @@ nh_inc:
 
 nh_sync:
         lbsr    MoveCursor           
+
+        * 2. Check for Paging ([MORE] prompt) after moving to new line
+        lda     page_lines,u
+        ldb     cur_rows,u
+        subb    #3              
+        pshs    b
+        cmpa    ,s+             
+        blo     nh_done
+        
+        bsr     DisplayMorePrompt
+        clr     page_lines,u
+nh_done:
         puls    a,b,x,y,pc
 
 *-------------------------------------------------------------------------------
@@ -282,12 +318,10 @@ more_len   equ     *-more_msg-1
 
 DisplayMorePrompt:
         pshs    a,b,x,y
-        ldx     cur_x,u         * Save logical cursor position
-        pshs    x
-        ldd     cur_cols,u
-        decb                    * Row rows-1
-        clra                    * Col 0
-        lbsr    MoveCursorToXY
+        lbsr    ZUSL            * Update status line first
+        
+        ldd     cur_x,u         * Save current active cursor position (cur_x and cur_y)
+        pshs    d               * Save (cur_x, cur_y) on CPU stack
         
         leax    more_msg,pcr
         lda     ,x+             * Get '['
@@ -299,21 +333,19 @@ DisplayMorePrompt:
         
         lbsr    WaitForKeypress        
         
-        * Erase [MORE] by overwriting with spaces
-        ldd     cur_cols,u
-        decb
-        clra
-        lbsr    MoveCursorToXY
+        * Erase [MORE] by overwriting with spaces at saved position
+        ldd     ,s              * Load saved cursor position from stack
+        lbsr    MoveCursorToXY  * Move physical cursor to that position
+        
         ldb     #more_len
         lda     #$20            * Space
 dm_cl:  lbsr    WriteStdoutChar
         decb                    
         bne     dm_cl
         
-        * Restore cursor to the content area
-        puls    x
-        stx     cur_x,u         * Restore logical cursor position
-        lbsr    MoveCursor
+        * Restore cursor back to the content area
+        puls    d               * Pull (cur_x, cur_y) from stack
+        lbsr    MoveCursorToXY  * Move physical cursor and restore logical cur_x/cur_y
         puls    a,b,x,y,pc
 
 *-------------------------------------------------------------------------------
@@ -530,9 +562,9 @@ inp_loop_start:
         leax    d,x             * X = pointer to text buffer
         ldb     ,x+             * B = Max buffer size (byte 0)
         * We are now pointing at byte 1 (where input starts)
-        * Store current length in MTEMP+1 (0) and max in MTEMP
-        stb     MTEMP,u
-        clr     MTEMP+1,u
+        * Store current length in input_len (0) and max in input_max
+        stb     input_max,u
+        clr     input_len,u
         stx     TEMP2,u         * Save buffer pointer
 
 inp_loop:
@@ -564,8 +596,8 @@ inp_read_ok:
         beq     inp_lf
         
         * Regular Character
-        ldb     MTEMP+1,u       * Check length
-        cmpb    MTEMP,u         * At max?
+        ldb     input_len,u     * Check length
+        cmpb    input_max,u     * At max?
         bhs     inp_loop        * Yes, ignore new characters
         
         * Convert to lowercase
@@ -577,14 +609,14 @@ inp_read_ok:
 inp_store:
         ldx     TEMP2,u         * Get buffer pointer
         sta     b,x             * Store in buffer
-        inc     MTEMP+1,u       * Increment length
+        inc     input_len,u     * Increment length
         lbsr    MYCHR           * Echo character manually
         lbra    inp_loop
 
 inp_bs:
-        tst     MTEMP+1,u       * Is buffer empty?
+        tst     input_len,u     * Is buffer empty?
         lbeq    inp_loop        * Yes, ignore backspace
-        dec     MTEMP+1,u       * Decrement length
+        dec     input_len,u     * Decrement length
         * Visual Backspace: Backspace, Space, Backspace
         lda     #$08
         lbsr    MYCHR
@@ -595,14 +627,14 @@ inp_bs:
         lbra    inp_loop
 
 inp_lf:
-        tst     MTEMP+1,u       * Is buffer empty?
+        tst     input_len,u     * Is buffer empty?
         bne     inp_done        * No, terminate input
         lbra    inp_loop        * Yes, discard/ignore it
 
 inp_done:
         * Null-terminate the string
         ldx     TEMP2,u
-        ldb     MTEMP+1,u
+        ldb     input_len,u
         clr     b,x
         
         * Echo the CR
@@ -623,7 +655,7 @@ inp_done:
 
 inp_exit:
         clr     in_input_mode,u * Disable input mode
-        lda     MTEMP+1,u       * Return length in A
+        lda     input_len,u     * Return length in A
         puls    y,pc            * Restore Z-stack pointer
 
 *-------------------------------------------------------------------------------
@@ -777,4 +809,3 @@ MYCHR_INV:
         jsr     [prtinv_vec,u]
         puls    x,y
         puls    a,pc
-

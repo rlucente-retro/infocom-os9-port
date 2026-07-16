@@ -140,6 +140,8 @@ ver_flag        rmb     1       * Flag to force disk reads during game verificat
 in_input_mode   rmb     1       * Flag: 1 if we are inside keyboard input/prompt echo
 word_len        rmb     1       * Length of the current word in word_buf
 max_swap_pages  rmb     1       * Maximum swapping pages allowed (Level 1 vs Level 2)
+input_max       rmb     1       * Max input length
+input_len       rmb     1       * Current input length
 
 ZPGTOP          equ     .       * End of Direct Page variables
 
