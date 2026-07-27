@@ -1,5 +1,5 @@
 # Build artifacts
-OS9ZIP
+infocom
 *.list
 *.map
 *.bin
@@ -7,10 +7,7 @@ OS9ZIP
 *.bak
 
 # Game data files
-ZORK1.DAT
-ZORK1_BACK.DAT
-ZORK1_CHECK.DAT
-ZORK1_IMG.DAT
+*.DAT
 
 # Trace/log files
 trace.txt
