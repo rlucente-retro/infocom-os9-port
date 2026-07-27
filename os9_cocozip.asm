@@ -2,7 +2,7 @@
 * OS9_COCOZIP.ASM - OS-9 Master Module for Z-Machine Interpreter
 *******************************************************************************
         use     defsfile
-        include OS9_EQ.ASM
+        include os9_eq.asm
 
 *-------------------------------------------------------------------------------
 * Module Header
@@ -407,17 +407,17 @@ err_len   equ   *-err_msg
 loading_msg fcc /THE STORY IS LOADING .../
 loading_len equ *-loading_msg
 
-        include OS9_DISPATCH.ASM
-        include OS9_IO.ASM
-        include OS9_DISK.ASM
-        include OS9_PAGING.ASM
-        include OS9_SUBS.ASM
-        include OS9_OBJECTS.ASM
-        include OS9_ZSTRING.ASM
-        include OS9_READ.ASM
-        include OS9_SCREEN.ASM
-        include OS9_MAIN.ASM
-        include OS9_OPS.ASM
+        include os9_dispatch.asm
+        include os9_io.asm
+        include os9_disk.asm
+        include os9_paging.asm
+        include os9_subs.asm
+        include os9_objects.asm
+        include os9_zstring.asm
+        include os9_read.asm
+        include os9_screen.asm
+        include os9_main.asm
+        include os9_ops.asm
 
         emod
 eom     equ     *
