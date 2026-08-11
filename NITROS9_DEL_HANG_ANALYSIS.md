@@ -6,6 +6,19 @@ After booting NitrOS-9 (built via `make -C recipes/coco/floppy`) and issuing she
 
 Using module load addresses from `notes.txt`, instruction traces in `output.txt`, and NitrOS-9 kernel sources in `nitros9`, this document details the line-by-line cause of the hang, the partial fix applied in PR #385, and the remaining kernel deadlock issue.
 
+> [!NOTE]
+> The instruction trace was captured using XRoar. The trace file (`output.txt`) and module addresses (`notes.txt`) are dynamic and may vary in subsequent runs, so the addresses documented below serve as specific examples.
+> 
+> To recreate the trace file and find module load addresses:
+> 1. Run NitrOS-9 in XRoar with tracing enabled:
+>    ```bash
+>    xroar -machine coco2b -load-fd0 l1_coco.dsk -trace 2>&1 | tee output.txt
+>    ```
+> 2. Once NitrOS-9 is up and running, determine the module load addresses and sizes using:
+>    ```bash
+>    mdir -e
+>    ```
+
 ---
 
 ## PR #385 Update & Current Status
