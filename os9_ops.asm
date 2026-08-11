@@ -140,31 +140,20 @@ ZSAVE:
         os9     I$Write
         lbcs    sz_fail_close
         
-        * Write Preload in 256-byte (1-page) chunks
+        * Write Preload in one contiguous write (ZPURE * 256 bytes)
         ldx     zcode_ptr,u
-        ldb     ZPURE,u
-        pshs    b               * Store page count on stack
-sz_w_lp:
-        ldb     ,s              * Get remaining pages
-        beq     sz_w_done       * Exit if 0
+        lda     ZPURE,u
+        clrb                    * D = ZPURE 00 (i.e., ZPURE * 256 bytes)
+        tfr     d,y
         lda     TEMP2,u
-        ldy     #256
         os9     I$Write
-        lbcs    sz_w_err
-        leax    256,x           * Advance buffer pointer to next page
-        dec     ,s              * Decrement page count
-        bra     sz_w_lp
-sz_w_err:
-        leas    1,s             * Clean stack
-        bra     sz_fail_close
-sz_w_done:
-        leas    1,s             * Clean stack
-        
+        lbcs    sz_fail_close
+
         * Close and Succeed
         lda     TEMP2,u
         os9     I$Close
         puls    y               * Restore sacred pointer
-        lbra     PREDS
+        lbra    PREDS
 
 sz_fail_close:
         lda     TEMP2,u
@@ -172,13 +161,13 @@ sz_fail_close:
 sz_fail_pop:
         puls    y
 sz_fail:
-        lbra     PREDF
+        lbra    PREDF
 
 ZREST:  
         pshs    y               * Protect Z-stack pointer
         leax    rest_prompt,pcr
         ldy     #rest_plen
-        lbsr     GETFILENAME
+        lbsr    GETFILENAME
         lbcs    rz_fail_pop     * Long branch to prevent byte overflow
         
         * I$Open
@@ -214,25 +203,14 @@ ZREST:
         os9     I$Read
         lbcs    rz_fail_close
         
-        * Read Preload in 256-byte (1-page) chunks
+        * Read Preload in one contiguous read (ZPURE * 256 bytes)
         ldx     zcode_ptr,u
-        ldb     ZPURE,u
-        pshs    b               * Store page count on stack
-rz_r_lp:
-        ldb     ,s              * Get remaining pages
-        beq     rz_r_done       * Exit if 0
+        lda     ZPURE,u
+        clrb                    * D = ZPURE 00 (i.e., ZPURE * 256 bytes)
+        tfr     d,y
         lda     TEMP2,u
-        ldy     #256
         os9     I$Read
-        lbcs    rz_r_err
-        leax    256,x           * Advance buffer pointer to next page
-        dec     ,s              * Decrement page count
-        bra     rz_r_lp
-rz_r_err:
-        leas    1,s             * Clean stack
-        bra     rz_fail_close
-rz_r_done:
-        leas    1,s             * Clean stack
+        lbcs    rz_fail_close
         
         * Restore State
         ldd     BUFSAV+2,u      * Relative OZSTAK
