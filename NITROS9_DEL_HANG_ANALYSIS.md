@@ -38,7 +38,7 @@ Using module load addresses from `notes.txt`, instruction traces in `output.txt`
 1. **Terminal Device Reservation (`term.V.BUSY`)**:
    * Process #1 (`Shell` at `$E656`) displays the command prompt (`GAMES/ZORK1: `) by writing to standard output (Path 1 / `Term`).
    * The Sequential Character File Manager ([`scf.asm`: lines 890–915](file:///Users/richardlucente/development/git/nitros9/level1/modules/scf.asm#L890-L915)) handles the output request (`AcquireDevice`) and marks `Term` as busy by setting its process ID in `term.V.BUSY`:
-     $$\text{term.V.BUSY} = 1 \quad (\text{Process \#1, Shell})$$
+     * `term.V.BUSY = 1` (Process #1, `Shell`)
 
 2. **Parent Fork & Wait**:
    * At line **6091493** (`Shell+0x56A`), `Shell` calls `F$Fork` (`Krn+0x42B`) to spawn child Process #2 (`Del` at `$A400`).
