@@ -14,7 +14,7 @@ Using module load addresses from `notes.txt`, instruction traces in `output.txt`
 >    ```bash
 >    xroar -machine coco2b -load-fd0 l1_coco.dsk -trace 2>&1 | tee output.txt
 >    ```
-> 2. Once NitrOS-9 is up and running, determine the module load addresses and sizes using:
+> 2. Once NitrOS-9 is up and running, execute the following command within the NitrOS-9 shell to determine module load addresses and sizes:
 >    ```bash
 >    mdir -e
 >    ```
