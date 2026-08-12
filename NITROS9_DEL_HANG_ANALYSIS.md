@@ -16,6 +16,7 @@ Using module load addresses from `notes.txt`, instruction traces in `output.txt`
 >    ```
 > 2. Once NitrOS-9 is up and running, execute the following command within the NitrOS-9 shell to determine module load addresses and sizes:
 >    ```bash
+>    load del
 >    mdir -e
 >    ```
 
