@@ -8,6 +8,7 @@ infocom
 
 # Game data files
 *.DAT
+games/
 
 # Trace/log files
 trace.txt
