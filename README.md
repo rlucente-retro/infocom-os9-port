@@ -66,10 +66,10 @@ make
   # Using a fetched .z3 game (will be downloaded automatically on demand):
   make STORY=games/zork1.z3
 
-  # Or using any local story file:
-  make STORY=zork1.dat
+  # Or using any local .z3 story file:
+  make STORY=zork1.z3
   ```
-  This creates `zork1.dsk` containing `/CMDS/infocom` and `zork1.z3` (or `zork1.dat`).
+  This creates `zork1.dsk` containing `/CMDS/infocom` and `zork1.z3`.
 
 * **Target CoCo 1/2 vs. CoCo 3:**
   - Default target is CoCo 3 (`l2_coco3_minimal.dsk`).
@@ -180,7 +180,7 @@ When running from the NitrOS-9 shell, execute `infocom` followed by the path to 
 ```bash
 infocom ziptest.z3
 # Or:
-infocom zork1.dat
+infocom zork1.z3
 ```
 
 ### From FujiNet Multi-Game Disks:
