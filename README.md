@@ -196,7 +196,17 @@ infocom ballyhoo.z3
 ```
 
 ### Save and Restore
-Under NitrOS-9, the `SAVE` and `RESTORE` commands prompt for a standard filename (e.g., `mysave.sav`) saved directly into your current working directory.
+Under NitrOS-9, the `SAVE` and `RESTORE` commands prompt for a standard file path saved directly into the OS-9 filesystem.
+
+> [!NOTE]
+> **FujiNet / DriveWire Game Saves:**
+> When running from a FujiNet DriveWire disk image, you should maintain a separate drive image mounted on the FujiNet SD card for game saves (for example, drive `/x2`).
+>
+> When playing a game:
+> 1. Type `SAVE` at the game prompt.
+> 2. At the file prompt, specify the path on the alternate drive, such as `/x2/zork1_chk1`, to save a checkpoint file to the second drive on the FujiNet SD card.
+> 
+> To reload a saved game, type `RESTORE` at the game prompt and provide the path (e.g., `/x2/zork1_chk1`).
 
 ---
 
