@@ -205,7 +205,7 @@ Under NitrOS-9, `SAVE` and `RESTORE` are commands issued directly by the user in
 > 1. **Create an empty save disk image:**
 >    Use the `os9` utility from [Toolshed](https://github.com/nitros9project/toolshed) to format a blank disk image:
 >    ```bash
->    os9 format -ds -dd -t40 -e infocom_save.dsk
+>    os9 format -t1024 -st18 -e -n"SAVE" infocom_save.dsk
 >    ```
 > 2. **Mount on the FujiNet SD card:**
 >    Place `infocom_save.dsk` onto your FujiNet SD card and mount it in the second drive slot (Slot 1) with read/write access. Under NitrOS-9, this second slot is identified as the `/X1` drive device.
