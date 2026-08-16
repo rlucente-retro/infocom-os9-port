@@ -200,13 +200,26 @@ Under NitrOS-9, `SAVE` and `RESTORE` are commands issued directly by the user in
 
 > [!NOTE]
 > **FujiNet / DriveWire Game Saves:**
-> When playing games from a FujiNet DriveWire multi-game disk image, you should have a separate drive image mounted on the FujiNet SD card dedicated to game saves (for example, drive `/x2`).
+> When running from a FujiNet DriveWire multi-game disk image, you will need a separate formatted disk image mounted on your FujiNet SD card to store game saves.
 >
-> While playing the game, you can save and restore your progress at any time:
-> 1. Type `SAVE` inside the game prompt.
-> 2. At the file prompt, specify the **full path** to the separate mounted drive on the FujiNet SD card (e.g., `/x2/zork1_chk1`) to save a checkpoint file.
-> 
-> To restore your progress later, type `RESTORE` inside the game prompt and enter the same full path (e.g., `/x2/zork1_chk1`).
+> 1. **Create an empty save disk image:**
+>    Use the `os9` utility from [Toolshed](https://github.com/nitros9project/toolshed) to format a blank disk image:
+>    ```bash
+>    os9 format -ds -dd -t40 -e infocom_save.dsk
+>    ```
+> 2. **Mount on the FujiNet SD card:**
+>    Place `infocom_save.dsk` onto your FujiNet SD card and mount it in the second drive slot (Slot 1) with read/write access. Under NitrOS-9, this second slot is identified as the `/X1` drive device.
+> 3. **Saving inside the game:**
+>    While playing any Infocom game:
+>    - Type `SAVE` at the game prompt.
+>    - When prompted for a filename, enter the full path specifying the `/X1` device, for example:
+>      ```text
+>      /X1/chk1
+>      ```
+>      *(You can use any filename you prefer, such as `/X1/zork1_save1` or `/X1/chk1`, as long as the `/X1/` device prefix is included).*
+> 4. **Restoring inside the game:**
+>    - Type `RESTORE` at the game prompt.
+>    - Enter the same full path (e.g., `/X1/chk1`) to reload your saved game state.
 
 ---
 
