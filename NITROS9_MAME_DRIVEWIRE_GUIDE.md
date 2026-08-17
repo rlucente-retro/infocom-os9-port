@@ -84,6 +84,10 @@ dw disk eject 1
 
 ## Step-by-Step Instructions
 
+> [!NOTE]
+> **MAME ROMs Directory:**
+> Ensure you have created the directory `~/.mame/roms` (`mkdir -p ~/.mame/roms`) and populated it with the appropriate MAME ROM files (such as `coco2b.zip` and parent ROM sets like `coco.zip`). All MAME commands in this guide include `-rompath ~/.mame/roms`.
+
 ### Step 1: Build the Standard NitrOS-9 Level 1 DriveWire Image
 
 Build the standard Level 1 DriveWire disk image using the default bit-banger driver:
@@ -128,6 +132,7 @@ cd /path/to/pyDriveWire
 1. Launch MAME (without autoboot) or pause it:
    ```bash
    mame coco2b \
+       -rompath ~/.mame/roms \
        -window -skip_gameinfo \
        -cart /path/to/coco-shelf/toolshed/hdbdos/hdbdw3cc2.rom \
        -rs232 null_modem \
@@ -169,6 +174,7 @@ Launch MAME with autoboot enabled:
 
 ```bash
 mame coco2b \
+    -rompath ~/.mame/roms \
     -window -skip_gameinfo \
     -autoboot_delay 3 -autoboot_command "DOS\n" \
     -cart /path/to/coco-shelf/toolshed/hdbdos/hdbdw3cc2.rom \
@@ -220,6 +226,7 @@ To start logging immediately on startup without stopping in the interactive debu
 2. **Launch MAME with `-debug` and `-debugscript`:**
    ```bash
    mame coco2b \
+       -rompath ~/.mame/roms \
        -window -skip_gameinfo \
        -debug \
        -debugscript trace_script.txt \
@@ -237,7 +244,9 @@ MAME will execute normally while writing each executed instruction along with al
 
 1. Launch MAME with `-debug`:
    ```bash
-   mame coco2b -debug \
+   mame coco2b \
+       -rompath ~/.mame/roms \
+       -debug \
        -cart /path/to/coco-shelf/toolshed/hdbdos/hdbdw3cc2.rom \
        -rs232 null_modem \
        -bitb socket.127.0.0.1:65504
@@ -309,7 +318,7 @@ A=F8 B=00 X=FF20 Y=A00E U=FFE0 S=0000 DP=00 CC=58 | A060: LDB    #$04
 |:---|:---|
 | **Build Bit-Banger L1 Kernel** | `cd $(NITROS9DIR) && make -C recipes/coco/dw clean && make -C recipes/coco/dw` |
 | **Start pyDriveWire** | `/path/to/pyDriveWire --ui-port 6800 --accept --port 65504 infocom_coco_dw.dsk` |
-| **Launch MAME (Serial DW)** | `mame coco2b -cart hdbdw3cc2.rom -rs232 null_modem -bitb socket.127.0.0.1:65504 -autoboot_delay 3 -autoboot_command "DOS\n"` |
+| **Launch MAME (Serial DW)** | `mame coco2b -rompath ~/.mame/roms -cart hdbdw3cc2.rom -rs232 null_modem -bitb socket.127.0.0.1:65504 -autoboot_delay 3 -autoboot_command "DOS\n"` |
 | **Launch MAME with Tracing** | Add `-debug -debugscript trace_script.txt` to the MAME launch command |
 | **Mount DW Drive 0** | Pass file as first argument to `pyDriveWire` (or `dw disk insert 0 <file>`) |
 | **Mount DW Drive 1** | Pass file as second argument to `pyDriveWire` (or `dw disk insert 1 <file>`) |
