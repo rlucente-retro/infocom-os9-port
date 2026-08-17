@@ -221,6 +221,12 @@ Under NitrOS-9, `SAVE` and `RESTORE` are commands issued directly by the user in
 >    - Type `RESTORE` at the game prompt.
 >    - Enter the same full path (e.g., `/X1/chk1`) to reload your saved game state.
 
+> [!IMPORTANT]
+> **FujiNet Firmware Requirement (> v1.6.1):**
+> To successfully save and restore game progress on a FujiNet device, your FujiNet hardware must run a firmware release **later than v1.6.1**. In v1.6.1 and earlier, a post-write sector seek bug causes subsequent disk operations on `/X1` to fail with `ERROR #211` / `Interpreter Error #14`.
+>
+> At present, this requires flashing a **nightly build** of the firmware to your FujiNet device (using [FujiNet-Flasher](https://github.com/FujiNetWIFI/fujinet-flasher)). If you encounter errors while writing to or reading from DriveWire disks, check for and install a newer firmware release for FujiNet to ensure the issue has not already been resolved upstream.
+
 ---
 
 ## Attribution
