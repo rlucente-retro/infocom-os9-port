@@ -142,6 +142,7 @@ word_len        rmb     1       * Length of the current word in word_buf
 max_swap_pages  rmb     1       * Maximum swapping pages allowed (Level 1 vs Level 2)
 input_max       rmb     1       * Max input length
 input_len       rmb     1       * Current input length
+l1_scrn_ptr     rmb     2       * Pointer to Level 1 VDG video RAM buffer (from SS.AlfaS)
 
 ZPGTOP          equ     .       * End of Direct Page variables
 

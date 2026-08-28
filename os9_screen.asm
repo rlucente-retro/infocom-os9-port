@@ -42,7 +42,10 @@ ZUSL:   pshs    cc
         clra
         clrb
         ldb     cur_cols,u
-        decb                    * Fill (cur_cols - 1) spaces to never write to last column
+        tst     l1_scrn_ptr,u   * Level 1 with direct VRAM?
+        bne     usl_clear_all   * Yes: fill all cur_cols (32) spaces
+        decb                    * Level 2: fill (cur_cols - 1) spaces to never write to last column
+usl_clear_all:
         pshs    y               * Save Z-stack pointer
         tfr     d,y
         leax    spaces_msg,pcr
@@ -82,8 +85,11 @@ ZUSL:   pshs    cc
         
         pshs    a
         ldb     cur_cols,u
-        decb                    * cur_cols - 1 (last column)
-        decb                    * cur_cols - 2 (leave 1 space margin at rightmost column)
+        tst     l1_scrn_ptr,u   * Level 1?
+        bne     usl_pos_l1
+        decb                    * Level 2: leave 1 space margin at rightmost column
+usl_pos_l1:
+        decb                    * cur_cols - 1
         subb    ,s+             * B = X (column)
         bpl     usl_pos_ok
         clrb                    * Clamp to 0
@@ -121,8 +127,11 @@ t_ut2:  sta     TEMP+1,u
         adda    #6              * total width = Hours len + 6
         pshs    a
         ldb     cur_cols,u
+        tst     l1_scrn_ptr,u   * Level 1?
+        bne     usl_time_l1
+        decb                    * Level 2: leave 1 space margin
+usl_time_l1:
         decb                    * cur_cols - 1
-        decb                    * cur_cols - 2 (leave 1 space margin)
         subb    ,s+             * B = X (column)
         bpl     usl_time_pos_ok
         clrb                    * Clamp to 0

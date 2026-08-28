@@ -332,27 +332,35 @@ DisplayMorePrompt:
         ldd     cur_x,u         * Save current active cursor position (cur_x and cur_y)
         pshs    d               * Save (cur_x, cur_y) on CPU stack
         
-        leax    more_msg,pcr
-        lda     ,x+             * Get '['
+        * 1. Print '[' in normal video
+        lda     #'['
         lbsr    WriteStdoutChar
-        ldy     #4              * 'more'
+        inc     cur_x,u
+        
+        * 2. Print "more" in inverse video
+        leax    more_msg+1,pcr  * Point to "more"
+        ldy     #4
         jsr     [prtinv_vec,u]  
-        lda     ,x              * Get ']'
+        
+        * 3. Print ']' in normal video
+        lda     #']'
         lbsr    WriteStdoutChar
+        inc     cur_x,u
         
         lbsr    WaitForKeypress        
         
-        * Erase [MORE] by overwriting with spaces at saved position
+        * 4. Erase [MORE] by overwriting with spaces at saved position
         ldd     ,s              * Load saved cursor position from stack
         lbsr    MoveCursorToXY  * Move physical cursor to that position
         
         ldb     #more_len
         lda     #$20            * Space
 dm_cl:  lbsr    WriteStdoutChar
+        inc     cur_x,u
         decb                    
         bne     dm_cl
         
-        * Restore cursor back to the content area
+        * 5. Restore cursor back to the content area
         puls    d               * Pull (cur_x, cur_y) from stack
         lbsr    MoveCursorToXY  * Move physical cursor and restore logical cur_x/cur_y
         puls    a,b,x,y,pc
@@ -398,6 +406,11 @@ MoveCursor:
         ldd     cur_x,u         
 MoveCursorToXY:
         std     cur_x,u         * Update logical cursor position
+        tst     l1_scrn_ptr,u   * Direct VDG VRAM mode on Level 1?
+        beq     mc_send_term    * No (Level 2 or standard terminal): ALWAYS send cursor escape code!
+        tstb                    * Is destination Row 0 in direct VRAM mode?
+        beq     mc_done         * Yes: direct VRAM write handles Row 0, avoid terminal cursor move
+mc_send_term:
         pshs    a,b,x,y
         adda    #32             
         addb    #32
@@ -409,6 +422,8 @@ MoveCursorToXY:
         ldy     #3
         os9     I$Write
         puls    a,b,x,y,pc
+mc_done:
+        rts
 
 *-------------------------------------------------------------------------------
 * WriteStdoutChar: Output character in A to Path 1
@@ -462,7 +477,7 @@ l1_clr_lp: lbsr    WriteStdoutChar
         clrb
         lbsr    MoveCursorToXY  * Move to (0,0)
         leax    status_buf,u
-        ldb     cur_cols,u
+        ldb     cur_cols,u      * Draw all cur_cols (32) characters on Level 1
         clra
         tfr     d,y
         lbsr    L1PrintInv
@@ -494,31 +509,89 @@ L2Scroll:
         rts
 
 *-------------------------------------------------------------------------------
-* L1PrintInv: Level 1 print inverse text
+* L1PrintInv: Level 1 print inverse text directly to VDG video RAM (or fallback)
+* Input: X = pointer to text buffer, Y = number of characters
 *-------------------------------------------------------------------------------
 L1PrintInv:
-        pshs    a,y
+        pshs    a,b,x,y
+        tst     cur_y,u         * Are we on Row 0 (Status Line)?
+        bne     l1_fallback     * If cur_y > 0 (story area), use stdout fallback
+        ldx     l1_scrn_ptr,u   * Direct VDG screen buffer address available?
+        beq     l1_fallback     * If not available, fallback to stdout
+        
+l1_direct_loop:
         cmpy    #0
-        beq     l1_done
-l1_loop:
-        lda     ,x+             
+        beq     l1_direct_done
+        
+        * Retrieve char from buffer (buffer ptr in saved X at 2,s)
+        ldx     2,s             * X = text buffer ptr
+        lda     ,x+
+        stx     2,s             * Advance saved text buffer ptr
+        
+        * Map character to VDG inverse alphanumeric mode (bits 0..5, bit 6=0, bit 7=0):
         cmpa    #'A'
-        blo     l1_chk_sp
+        blo     l1_d_sym
         cmpa    #'Z'
-        bhi     l1_chk_sp
-        adda    #$20            
-        bra     l1_print
-l1_chk_sp:
-        cmpa    #$20
-        bne     l1_print
-        lda     #$80            
-l1_print:
+        bhi     l1_d_lc
+        suba    #$40            * 'A'..'Z' ($41..$5A) -> $01..$1A (Inverse Letters)
+        bra     l1_d_store
+l1_d_lc:
+        cmpa    #'a'
+        blo     l1_d_store
+        cmpa    #'z'
+        bhi     l1_d_store
+        suba    #$60            * 'a'..'z' ($61..$7A) -> $01..$1A (Inverse Letters)
+        bra     l1_d_store
+l1_d_sym:
+        anda    #$3F            * Digits ($30..$39), space ($20), symbols ($20..$3F) -> bit 6=0
+l1_d_store:
+        pshs    a               * Save mapped VDG byte
+        ldx     l1_scrn_ptr,u   * Base screen address
+        ldb     cur_y,u
+        lda     #32
+        mul                     * D = cur_y * 32
+        addb    cur_x,u
+        adca    #0
+        leax    d,x             * X = physical address in VDG screen RAM
+        puls    a               * Restore mapped VDG byte
+        sta     ,x              * Store directly to VDG RAM!
+        
+        * Update status_buf if on Row 0
+        tst     cur_y,u
+        bne     l1_d_next
+        ldb     cur_x,u
+        cmpb    #80
+        bhs     l1_d_next
+        leax    status_buf,u
+        abx
+        sta     ,x
+l1_d_next:
+        inc     cur_x,u
+        leay    -1,y
+        bra     l1_direct_loop
+
+l1_direct_done:
+        puls    a,b,x,y,pc
+
+l1_fallback:
+        * Fallback if SS.AlfaS is not supported
+        ldx     2,s             * X = text buffer ptr
+l1_fb_loop:
+        cmpy    #0
+        beq     l1_fb_done
+        lda     ,x+
+        cmpa    #'A'
+        blo     l1_fb_print
+        cmpa    #'Z'
+        bhi     l1_fb_print
+        adda    #$20            * 'A'..'Z' -> 'a'..'z'
+l1_fb_print:
         lbsr    WriteStdoutChar
         inc     cur_x,u
-        leay    -1,y            
-        bne     l1_loop
-l1_done:
-        puls    a,y,pc
+        leay    -1,y
+        bra     l1_fb_loop
+l1_fb_done:
+        puls    a,b,x,y,pc
 
 *-------------------------------------------------------------------------------
 * L2PrintInv: Level 2 print inverse text

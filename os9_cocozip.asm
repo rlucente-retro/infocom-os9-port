@@ -52,6 +52,8 @@ clr_lp: clr     ,u+
         sta     path_num,u      * Save path for later use
 
         * 5. Initialize Terminal Defaults
+        clr     l1_scrn_ptr,u
+        clr     l1_scrn_ptr+1,u
         ldd     #80*256+24      * Default 80x24
         std     cur_cols,u
         lda     #1
@@ -90,6 +92,16 @@ SetL1Drivers:
         stx     prtinv_vec,u
         leax    L1Scroll,pcr    
         stx     scroll_vec,u
+
+        * Query VDG physical screen memory buffer address
+        clr     l1_scrn_ptr,u
+        clr     l1_scrn_ptr+1,u
+        lda     #1              * Path 1 (stdout)
+        ldb     #SS.AlfaS       * Query VDG display buffer address
+        os9     I$GetStt
+        bcs     no_vdg_addr
+        stx     l1_scrn_ptr,u   * Save physical buffer pointer (e.g. $0400)
+no_vdg_addr:
 
         * Reinstate VDG reverse video check
         pshs    u               * Save our data area pointer U
