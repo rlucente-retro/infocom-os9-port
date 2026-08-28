@@ -42,6 +42,7 @@ ZUSL:   pshs    cc
         clra
         clrb
         ldb     cur_cols,u
+        decb                    * Fill (cur_cols - 1) spaces to never write to last column
         pshs    y               * Save Z-stack pointer
         tfr     d,y
         leax    spaces_msg,pcr
@@ -81,8 +82,12 @@ ZUSL:   pshs    cc
         
         pshs    a
         ldb     cur_cols,u
-        decb
+        decb                    * cur_cols - 1 (last column)
+        decb                    * cur_cols - 2 (leave 1 space margin at rightmost column)
         subb    ,s+             * B = X (column)
+        bpl     usl_pos_ok
+        clrb                    * Clamp to 0
+usl_pos_ok:
         tfr     b,a             * A = X
         clrb                    * B = 0 (Y)
         lbsr    MoveCursorToXY
@@ -116,8 +121,12 @@ t_ut2:  sta     TEMP+1,u
         adda    #6              * total width = Hours len + 6
         pshs    a
         ldb     cur_cols,u
-        decb
+        decb                    * cur_cols - 1
+        decb                    * cur_cols - 2 (leave 1 space margin)
         subb    ,s+             * B = X (column)
+        bpl     usl_time_pos_ok
+        clrb                    * Clamp to 0
+usl_time_pos_ok:
         tfr     b,a             * A = X
         clrb                    * B = 0 (Y)
         lbsr    MoveCursorToXY

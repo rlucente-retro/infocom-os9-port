@@ -102,27 +102,36 @@ mychr_no_l1_conv:
         
         * 2. Detect Special Characters
         cmpa    #$08            * Backspace
-        beq     chr_bs
+        lbeq    chr_bs
         cmpa    #$09            * Tab
-        beq     chr_tab
+        lbeq    chr_tab
         cmpa    #$0A            * LF
-        beq     chr_lf
+        lbeq    chr_lf
         cmpa    #$0C            * Form Feed / Clear Screen
-        beq     chr_cls
+        lbeq    chr_cls
         cmpa    #$0D            * CR
-        beq     chr_cr
+        lbeq    chr_cr
         lbra    chr_done        * Ignore other control codes
         
 chr_reg:
+        tst     cur_y,u
+        beq     chr_reg_row0
         * Early Wrap Check
         ldb     cur_x,u
         cmpb    cur_cols,u
         blo     chr_reg_in
         lbsr    HandleWrapAndNewline
+        bra     chr_reg_in
+chr_reg_row0:
+        ldb     cur_x,u
+        incb
+        cmpb    cur_cols,u
+        bhs     chr_reg_done    * Never write to last column on row 0
 chr_reg_in:
         clr     was_cr,u        
         lbsr    WriteStdoutChar 
         inc     cur_x,u
+chr_reg_done:
         puls    a,b,x,y,pc
 
 chr_tab:
