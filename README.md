@@ -101,24 +101,48 @@ FujiNet / DriveWire disks are 127MB NitrOS-9 DriveWire filesystem images that in
 
 The list of games, download URLs, and inclusion flags is defined in [`masterpiece.csv`](masterpiece.csv). Missing story files are automatically downloaded into a local `games/` cache directory using `curl` during the build.
 
-* **Build both CoCo 1/2 and CoCo 3 FujiNet disk images (open-source Zork games only by default):**
+* **Build Universal Data Disk for Multiple Computers (CoCo 1/2, CoCo 3, Wildbits):**
+  Since the `infocom` executable and game files are identical across NitrOS-9 Level 1 and Level 2, you can generate a clean data disk image (`infocom_dw.dsk`) that works across multiple machines (CoCo 1/2, CoCo 3, and Wildbits jr2/k2) after booting the system from a separate OS disk image:
   ```bash
-  make fujinet
+  make fujinet-data
+  # Or with all games:
+  make fujinet-data ALL_GAMES=1
   ```
-  *(Pass `ALL_GAMES=1` to package all 21 games from `masterpiece.csv`: `make fujinet ALL_GAMES=1`).*
+  *(Aliases: `make dw-data`, `make dw`, `make infocom_dw.dsk`)*
+
+  This creates a 127MB RBF disk image containing **only**:
+  - `/CMDS/infocom` (with execution attributes)
+  - `/GAMES/INFOCOM/<game files>`
+
+  No boot tracks, kernel modules, or other system files are included on this disk image. Once your computer is booted from its primary OS disk, mount `infocom_dw.dsk` on a secondary DriveWire or FujiNet drive (such as `/x1`), and launch games with:
+  ```bash
+  chx /x1/CMDS
+  chd /x1/GAMES/INFOCOM
+  infocom zork1.z3
+  ```
+  *(or directly: `/x1/CMDS/infocom /x1/GAMES/INFOCOM/zork1.z3`)*
+
+* **Build CoCo Bootable FujiNet DriveWire Disk Images:**
+  To generate full, bootable NitrOS-9 DriveWire disk images with complete OS commands and kernels:
+  ```bash
+  # Build both CoCo 1/2 and CoCo 3 bootable disks:
+  make fujinet
+  # Or with all games:
+  make fujinet ALL_GAMES=1
+  ```
 
   This generates:
-  - `infocom_coco_dw.dsk`: Level 1 NitrOS-9 DriveWire image based on `recipes/coco/dw`.
-  - `infocom_coco3_dw.dsk`: Level 2 NitrOS-9 DriveWire image based on `recipes/coco3/dw`.
+  - `infocom_coco_dw.dsk`: Level 1 NitrOS-9 DriveWire boot image based on `recipes/coco/dw`.
+  - `infocom_coco3_dw.dsk`: Level 2 NitrOS-9 DriveWire boot image based on `recipes/coco3/dw`.
 
-* **Build for CoCo 3 only:**
+* **Build Bootable Disk for CoCo 3 only:**
   ```bash
   make fujinet-coco3
   # Or with all games:
   make fujinet-coco3 ALL_GAMES=1
   ```
 
-* **Build for CoCo 1/2 only:**
+* **Build Bootable Disk for CoCo 1/2 only:**
   ```bash
   make fujinet-coco
   # Or with all games:

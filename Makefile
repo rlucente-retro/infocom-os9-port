@@ -13,8 +13,26 @@ DEPS = os9_cocozip.asm os9_eq.asm os9_io.asm os9_disk.asm os9_paging.asm \
 # MAME machine to target (coco3 or coco2b)
 MAME_MACHINE ?= coco3
 
-# Story file to include on the single-story floppy disk image (e.g., ziptest.z3, games/zork1.z3)
+# CSV file containing URLs and destination filenames for multi-game disks
+CSVFILE ?= masterpiece.csv
+GAMES_DIR ?= games
+
+# Story file to include on the single-story floppy disk image (e.g., ziptest.z3, zork1.z3, games/zork1.z3)
 STORY ?= ziptest.z3
+
+# Auto-resolve STORY if specified without directory prefix (e.g., STORY=zork1.z3)
+ifeq ($(wildcard $(STORY)),)
+STORY_NAME := $(shell echo $(notdir $(STORY)) | tr 'A-Z' 'a-z')
+ifneq ($(wildcard $(GAMES_DIR)/$(STORY_NAME)),)
+override STORY := $(GAMES_DIR)/$(STORY_NAME)
+else
+STORY_IN_CSV := $(shell awk -F',' -v name="$(STORY_NAME)" '{n=$$2; gsub(/[ \r\t]/,"",n); if (tolower(n) == name) {print n; exit}}' $(CSVFILE) 2>/dev/null)
+ifneq ($(STORY_IN_CSV),)
+override STORY := $(GAMES_DIR)/$(STORY_IN_CSV)
+endif
+endif
+endif
+
 LOWER_STORY = $(shell echo $(STORY) | tr 'A-Z' 'a-z')
 
 # Floppy base disk images (for single-story disk & MAME run)
@@ -39,10 +57,6 @@ COCO3_DW_SRCDISKIMAGE = $(COCO3_DW_SRCDISKDIR)/l2_coco3_dw.dsk
 PLATFORM ?= jr2
 WILDBITS_SRCDISKDIR = $(NITROS9DIR)/recipes/wildbits/l2
 WILDBITS_DSK = infocom_wildbits_$(PLATFORM).dsk
-
-# CSV file containing URLs and destination filenames for multi-game disks
-CSVFILE ?= masterpiece.csv
-GAMES_DIR ?= games
 
 # Whether to include all games from CSV (1) or only games marked as included in column 3 (0)
 ALL_GAMES ?= 0
@@ -85,7 +99,7 @@ $(GAMES_DIR)/%: $(CSVFILE) | $(GAMES_DIR)
 	@URL=$$(awk -F',' -v name="$*" '{url=$$1; n=$$2; gsub(/[ \r\t]/,"",url); gsub(/[ \r\t]/,"",n); if (n == name) print url;}' $(CSVFILE)); \
 	if [ -n "$$URL" ]; then \
 		echo "Downloading $$URL -> $@..."; \
-		curl -sSfL "$$URL" -o "$@" || { rm -f "$@"; exit 1; }; \
+		curl -fL --connect-timeout 15 --retry 3 --retry-delay 1 --progress-bar "$$URL" -o "$@" || { rm -f "$@"; exit 1; }; \
 	else \
 		echo "Error: Could not find URL for $* in $(CSVFILE)" >&2; \
 		exit 1; \
@@ -141,7 +155,23 @@ infocom_wildbits_k2.dsk: $(TARGET) $(WILDBITS_SRCDISKDIR)/l2_wildbitsk2.dsk $(GA
 	os9 makdir $@,GAMES/INFOCOM
 	os9 copy -o=0 $(GAME_FILES) $@,GAMES/INFOCOM
 
+# Universal FujiNet / DriveWire multi-game data disk (Level 1 & Level 2; CoCo 1/2, CoCo 3, Wildbits)
+infocom_dw.dsk: $(TARGET) $(GAME_FILES)
+	rm -f $@
+	os9 format -t29126 -ss -dd -q $@ -n"Infocom"
+	os9 makdir $@,CMDS
+	os9 copy -o=0 $(TARGET) $@,CMDS/$(TARGET)
+	os9 attr -e -pe -q $@,CMDS/$(TARGET)
+	os9 makdir $@,GAMES
+	os9 makdir $@,GAMES/INFOCOM
+ifneq ($(strip $(GAME_FILES)),)
+	os9 copy -o=0 $(GAME_FILES) $@,GAMES/INFOCOM
+endif
+
 # Target aliases
+fujinet-data: infocom_dw.dsk
+dw-data: infocom_dw.dsk
+dw: infocom_dw.dsk
 fujinet: infocom_coco_dw.dsk infocom_coco3_dw.dsk
 fujinet-coco: infocom_coco_dw.dsk
 fujinet-coco3: infocom_coco3_dw.dsk
@@ -150,7 +180,7 @@ wildbits: $(WILDBITS_DSK)
 wildbits-jr2: infocom_wildbits_jr2.dsk
 wildbits-k2: infocom_wildbits_k2.dsk
 
-.PHONY: all clean clean-games distclean fetch-games fujinet fujinet-coco fujinet-coco3 wildbits wildbits-jr2 wildbits-k2 run
+.PHONY: all clean clean-games distclean fetch-games fujinet fujinet-coco fujinet-coco3 fujinet-data dw dw-data wildbits wildbits-jr2 wildbits-k2 run
 
 MAME_BINARY  ?= mame
 MAME_FLAGS   ?= -rompath $(MAME_ROM_PATH) -window -skip_gameinfo -autoboot_delay 5 -autoboot_command "DOS\n" -ext fdc -ext:fdc:wd17xx:0 525qd
