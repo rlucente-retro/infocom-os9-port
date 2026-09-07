@@ -200,8 +200,8 @@ dir
 # List files on a secondary DriveWire disk (/X1)
 dir /X1
 
-# Change directory to GAMES on Drive 0
-chd /dd/GAMES
+# Change directory to GAMES/INFOCOM on Drive 0
+chd /dd/GAMES/INFOCOM
 
 # Run an Infocom game
 infocom zork1.z3

@@ -44,8 +44,19 @@ WILDBITS_DSK = infocom_wildbits_$(PLATFORM).dsk
 CSVFILE ?= masterpiece.csv
 GAMES_DIR ?= games
 
+# Whether to include all games from CSV (1) or only games marked as included in column 3 (0)
+ALL_GAMES ?= 0
+
 # Extract list of game files from CSV (skipping comment and empty lines)
-GAME_FILES = $(shell awk -F',' '{url=$$1; name=$$2; gsub(/[ \r\t]/,"",url); gsub(/[ \r\t]/,"",name); if (url != "" && substr(url,1,1) != "\#" && name != "") print "$(GAMES_DIR)/" name;}' $(CSVFILE) 2>/dev/null)
+# If ALL_GAMES=1, all games are included. Otherwise, only games where column 3 is 1/yes/true are included.
+GAME_FILES = $(shell awk -F',' -v all="$(ALL_GAMES)" '{ \
+	url=$$1; name=$$2; inc=tolower($$3); \
+	gsub(/[ \r\t]/,"",url); gsub(/[ \r\t]/,"",name); gsub(/[ \r\t]/,"",inc); \
+	if (url != "" && substr(url,1,1) != "\#" && name != "") { \
+		if (all == "1" || inc == "1" || inc == "yes" || inc == "true") \
+			print "$(GAMES_DIR)/" name; \
+	} \
+}' $(CSVFILE) 2>/dev/null)
 
 all: $(DSKIMAGE)
 
@@ -62,7 +73,9 @@ $(DSKIMAGE): $(TARGET) $(SRCDISKIMAGE) $(STORY)
 	cp $(SRCDISKIMAGE) $(DSKIMAGE)
 	os9 copy $(TARGET) $(DSKIMAGE),CMDS/$(TARGET)
 	os9 attr -e -pe -q $(DSKIMAGE),CMDS/$(TARGET)
-	os9 copy $(STORY) $(DSKIMAGE),$(notdir $(LOWER_STORY))
+	os9 makdir $(DSKIMAGE),GAMES
+	os9 makdir $(DSKIMAGE),GAMES/INFOCOM
+	os9 copy $(STORY) $(DSKIMAGE),GAMES/INFOCOM/$(notdir $(LOWER_STORY))
 
 # Rules for downloading multi-game story files
 $(GAMES_DIR):
@@ -97,7 +110,8 @@ infocom_coco_dw.dsk: $(TARGET) $(COCO_DW_SRCDISKIMAGE) $(GAME_FILES)
 	os9 copy -o=0 $(TARGET) $@,CMDS/$(TARGET)
 	os9 attr -e -pe -q $@,CMDS/$(TARGET)
 	os9 makdir $@,GAMES
-	os9 copy -o=0 $(GAME_FILES) $@,GAMES
+	os9 makdir $@,GAMES/INFOCOM
+	os9 copy -o=0 $(GAME_FILES) $@,GAMES/INFOCOM
 
 infocom_coco3_dw.dsk: $(TARGET) $(COCO3_DW_SRCDISKIMAGE) $(GAME_FILES)
 	rm -f $@
@@ -105,7 +119,8 @@ infocom_coco3_dw.dsk: $(TARGET) $(COCO3_DW_SRCDISKIMAGE) $(GAME_FILES)
 	os9 copy -o=0 $(TARGET) $@,CMDS/$(TARGET)
 	os9 attr -e -pe -q $@,CMDS/$(TARGET)
 	os9 makdir $@,GAMES
-	os9 copy -o=0 $(GAME_FILES) $@,GAMES
+	os9 makdir $@,GAMES/INFOCOM
+	os9 copy -o=0 $(GAME_FILES) $@,GAMES/INFOCOM
 
 # Wildbits multi-game disk images
 infocom_wildbits_jr2.dsk: $(TARGET) $(WILDBITS_SRCDISKDIR)/l2_wildbitsjr2.dsk $(GAME_FILES)
@@ -114,7 +129,8 @@ infocom_wildbits_jr2.dsk: $(TARGET) $(WILDBITS_SRCDISKDIR)/l2_wildbitsjr2.dsk $(
 	os9 copy -o=0 $(TARGET) $@,CMDS/$(TARGET)
 	os9 attr -e -pe -q $@,CMDS/$(TARGET)
 	os9 makdir $@,GAMES
-	os9 copy -o=0 $(GAME_FILES) $@,GAMES
+	os9 makdir $@,GAMES/INFOCOM
+	os9 copy -o=0 $(GAME_FILES) $@,GAMES/INFOCOM
 
 infocom_wildbits_k2.dsk: $(TARGET) $(WILDBITS_SRCDISKDIR)/l2_wildbitsk2.dsk $(GAME_FILES)
 	rm -f $@
@@ -122,7 +138,8 @@ infocom_wildbits_k2.dsk: $(TARGET) $(WILDBITS_SRCDISKDIR)/l2_wildbitsk2.dsk $(GA
 	os9 copy -o=0 $(TARGET) $@,CMDS/$(TARGET)
 	os9 attr -e -pe -q $@,CMDS/$(TARGET)
 	os9 makdir $@,GAMES
-	os9 copy -o=0 $(GAME_FILES) $@,GAMES
+	os9 makdir $@,GAMES/INFOCOM
+	os9 copy -o=0 $(GAME_FILES) $@,GAMES/INFOCOM
 
 # Target aliases
 fujinet: infocom_coco_dw.dsk infocom_coco3_dw.dsk

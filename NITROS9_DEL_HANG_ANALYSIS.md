@@ -51,7 +51,7 @@ Using module load addresses from `notes.txt`, instruction traces in `output.txt`
 
 1. **Terminal Device Reservation (`term.V.BUSY`)**:
    * Process #1 (`Shell` at `$E656`) displays the command prompt (`GAMES/ZORK1: `) by writing to standard output (Path 1 / `Term`).
-   * The Sequential Character File Manager ([`scf.asm`: lines 890–915](file:///Users/richardlucente/development/git/nitros9/level1/modules/scf.asm#L890-L915)) handles the output request (`AcquireDevice`) and marks `Term` as busy by setting its process ID in `term.V.BUSY`:
+   * The Sequential Character File Manager ([`scf.asm`: lines 890–915](https://github.com/nitros9project/nitros9/blob/main/level1/modules/scf.asm#L890-L915)) handles the output request (`AcquireDevice`) and marks `Term` as busy by setting its process ID in `term.V.BUSY`:
      * `term.V.BUSY = 1` (Process #1, `Shell`)
 
 2. **Parent Fork & Wait**:
@@ -65,7 +65,7 @@ Using module load addresses from `notes.txt`, instruction traces in `output.txt`
    * Upon receiving an error from `IOMan`, `Del` attempts to write an error message to standard output (`stdout`).
    * At line **6094431** (`IOMan+0x10F`), `scf.asm` checks `AcquireDevice` on `Term`. It finds `term.V.BUSY == 1` (Process #1 `Shell`).
    * Because `term.V.BUSY != 2` (`Del`), `scf.asm` calls `F$IOQu` at line **6095884** (`IOMan+0x6B4`).
-   * At line **6095954** (`IOMan+0x6DD`), `F$IOQu` ([`ioman.asm`: line 2164](file:///Users/richardlucente/development/git/nitros9/level1/modules/ioman.asm#L2164)) links Process #2 (`Del`) into Process #1's I/O queue (`P$IOQN`) and calls `os9 F$Sleep` with `X = $0000`.
+   * At line **6095954** (`IOMan+0x6DD`), `F$IOQu` ([`ioman.asm`: line 2164](https://github.com/nitros9project/nitros9/blob/main/level1/modules/ioman.asm#L2164)) links Process #2 (`Del`) into Process #1's I/O queue (`P$IOQN`) and calls `os9 F$Sleep` with `X = $0000`.
    * `X = $0000` puts Process #2 (`Del`) to sleep **indefinitely** until it receives a `S$Wake` signal from `Shell`.
 
 4. **Missing Wakeup Signal & Deadlock**:
@@ -89,7 +89,7 @@ Using module load addresses from `notes.txt`, instruction traces in `output.txt`
    endc
    ```
 
-2. **`AcquireDevice` in [`level1/modules/scf.asm`](file:///Users/richardlucente/development/git/nitros9/level1/modules/scf.asm#L890-L905)**:
+2. **`AcquireDevice` in [`level1/modules/scf.asm`](https://github.com/nitros9project/nitros9/blob/main/level1/modules/scf.asm#L890-L905)**:
    ```assembly
    CheckDeviceBusy     ldx       V$STAT,x  ; get device static storage address
                        ldb       V.BUSY,x  ; get active process ID
@@ -102,7 +102,7 @@ Using module load addresses from `notes.txt`, instruction traces in `output.txt`
    ```
    When a child process inherits open paths from a parent, `scf.asm` sees `V.BUSY == Parent_PID`, fails `cmpb ,s`, and puts the child to sleep queued on the parent.
 
-3. **`ReleaseDeviceIfOwned` in [`level1/modules/scf.asm`](file:///Users/richardlucente/development/git/nitros9/level1/modules/scf.asm#L880-L887)**:
+3. **`ReleaseDeviceIfOwned` in [`level1/modules/scf.asm`](https://github.com/nitros9project/nitros9/blob/main/level1/modules/scf.asm#L880-L887)**:
    ```assembly
    ReleaseDeviceIfOwned beq       ReleaseDeviceReturn
                        ldx       V$STAT,x  ; get static storage pointer
@@ -118,8 +118,8 @@ Using module load addresses from `notes.txt`, instruction traces in `output.txt`
 
 ## Recommended Fixes in NitrOS-9
 
-1. **Fix in `scf.asm` ([`level1/modules/scf.asm`](file:///Users/richardlucente/development/git/nitros9/level1/modules/scf.asm#L881))**:
+1. **Fix in `scf.asm` ([`level1/modules/scf.asm`](https://github.com/nitros9project/nitros9/blob/main/level1/modules/scf.asm#L881))**:
    Update `ReleaseDeviceIfOwned` so that when `V.BUSY` is cleared, it checks if `<D.Proc` has a non-zero `P$IOQN`. If so, clear `P$IOQN` and issue `os9 F$Send` with `B = #S$Wake` to wake up the sleeping child process.
 
-2. **Fix in `shell_21.asm` ([`level1/cmds/shell_21.asm`](file:///Users/richardlucente/development/git/nitros9/level1/cmds/shell_21.asm#L860))**:
+2. **Fix in `shell_21.asm` ([`level1/cmds/shell_21.asm`](https://github.com/nitros9project/nitros9/blob/main/level1/cmds/shell_21.asm#L860))**:
    Ensure `shell_21` releases standard device ownership (`ReleaseDevices`) before invoking `F$Wait` for child processes.

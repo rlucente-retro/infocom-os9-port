@@ -13,6 +13,7 @@ games/
 # Trace/log files
 trace.txt
 output.txt
+cfg/
 
 # Prototype binary/temp files
 protozip
