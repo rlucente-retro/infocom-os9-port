@@ -97,22 +97,7 @@ make
 FujiNet / DriveWire disks are 127MB NitrOS-9 DriveWire filesystem images that include the `infocom` executable in `/CMDS` and Infocom games placed in the `/GAMES/INFOCOM` directory.
 
 > [!NOTE]
-> **Intellectual Property and Game Packaging:**
-> The story file URLs in [`masterpiece.csv`](masterpiece.csv) point to Andrew Plotkin's [Obsessively Complete Infocom Catalog](https://eblong.com/infocom/), which archives canonical game files (primarily from the 1996 *Classic Text Adventure Masterpieces of Infocom* release).
->
-> As documented in the catalog's [Disclaimer](https://eblong.com/infocom/#disclaimer):
-> * Copyright for Infocom's proprietary catalog rests with **Microsoft** (which acquired Activision in 2023).
-> * The broader catalog was preserved through historical archiving efforts across the interactive fiction community because the commercial owners did not maintain the original development tools or compilation environments.
-> * In **November 2025**, Microsoft officially released the source code and story files for [*Zork I*, *Zork II*, and *Zork III* as open source under the MIT License](https://opensource.microsoft.com/blog/2025/11/20/preserving-code-that-shaped-generations-zork-i-ii-and-iii-go-open-source/). While the community hopes that open-source declarations for the remaining titles will follow in due course, the rest of the catalog currently remains proprietary.
->
-> To respect these rights, the third column of [`masterpiece.csv`](masterpiece.csv) enables (`1`) only the three open-source *Zork* games by default (`zork1.z3`, `zork2.z3`, `zork3.z3`). Only these titles are fetched and packaged on multi-game disk images during a standard build.
->
-> Users who own legitimate licenses or copies of other Infocom games can package them in either of two ways:
-> 1. **Include all games at build time:** Pass `ALL_GAMES=1` to make:
->    ```bash
->    make fujinet ALL_GAMES=1
->    ```
-> 2. **Selectively include specific games:** Edit [`masterpiece.csv`](masterpiece.csv) and change the third column from `0` to `1` (or `yes`/`true`) for the titles you wish to package.
+> By default, only the open-source *Zork* trilogy is packaged onto multi-game disk images (see [Attribution & Intellectual Property](#attribution--intellectual-property) for copyright and licensing details). To include all titles from [`masterpiece.csv`](masterpiece.csv), build with `ALL_GAMES=1` (e.g., `make fujinet ALL_GAMES=1`) or selectively enable individual games by setting their third column in [`masterpiece.csv`](masterpiece.csv) to `1`.
 
 The list of games, download URLs, and inclusion flags is defined in [`masterpiece.csv`](masterpiece.csv). Missing story files are automatically downloaded into a local `games/` cache directory using `curl` during the build.
 
